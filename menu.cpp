@@ -1,12 +1,12 @@
 #include "header.h"
 
 
-Menu::Menu(sf::RenderWindow& NewWindow)
+Menu::Menu(sf::RenderWindow &NewWindow)
 {
     Window=&NewWindow;
     font.loadFromFile("Aller.ttf");
 
-    sf::Vector2u Resolution=Window->getSize();
+    Vector2u Resolution=Window->getSize();
     TextSize=Resolution.y/(12.f);
 
     ostringstream convert;
@@ -186,7 +186,7 @@ Menu::Menu(sf::RenderWindow& NewWindow)
 
 
 
-void Menu::ProcessEvents(sf::Event& Event){
+void Menu::ProcessEvents(sf::Event &Event){
     while (Window->pollEvent(Event))
     {
         switch (Event.type)
@@ -240,9 +240,9 @@ void Menu::ProcessEvents(sf::Event& Event){
             }
         case sf::Event::JoystickButtonPressed:
         {
-        unsigned int ActiveJoy=Event.joystickButton.joystickId;
+        unsigned ActiveJoy=Event.joystickButton.joystickId;
         if (JoyConfig==1 && none_of(RegJoy.begin(),RegJoy.end(),
-                                      [&](unsigned int k){return k==ActiveJoy;}))
+                                      [&](unsigned k){return k==ActiveJoy;}))
         {
             Config.JoyId[ActiveJoy]=CurrentJoy;
             RegJoy.push_back(ActiveJoy);
@@ -264,9 +264,9 @@ void Menu::ProcessEvents(sf::Event& Event){
 
 
 void Menu::Render(){
-    for (unsigned int i=0; i< TextBlock[Choice].size(); i++)
+    for (unsigned i=0; i< TextBlock[Choice].size(); i++)
     {
-        if ((int)Selection==TextBlock[Choice][i].SelectionIndex)
+        if (Selection==TextBlock[Choice][i].SelectionIndex)
         {
             TextBlock[Choice][i].setColor(sf::Color::Yellow);
         }
@@ -358,11 +358,13 @@ void Menu::Update(){
         {
             Choice=2;
             Selection=0;
+            FlagOn=0;
         }
         if(Selection==3 && Selected==1)
         {
             Choice=0;
             Selection=0;
+            FlagOn=0;
         }
     }
     if(Choice==2)
@@ -395,6 +397,7 @@ void Menu::Update(){
         {
             Choice=0;
             Selection=0;
+            FlagOn=0;
         }
     }
 

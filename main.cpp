@@ -1,25 +1,27 @@
 #include "header.h"
 
-sf::Vector2i Resolution=sf::Vector2i(800,600);
-float CyclesPerSecond=200;
-float CycleTime=1/CyclesPerSecond;
-float FramesPerSecond=100;
-float FrameTime=1/FramesPerSecond;
+Vector2i Resolution=Vector2i(800,600);
+double CyclesPerSecond=100;
+double CycleTime=1/CyclesPerSecond;
+double FramesPerSecond=60;
+double FrameTime=1/FramesPerSecond;
 sf::Clock GameClock;
-float cycleaccumulator=0;
-float frameaccumulator=0;
+unsigned cycleaccumulator=0;
+unsigned frameaccumulator=0;
 
 int main()
 {
+    //timeBeginPeriod(1);
     sf::RenderWindow Window(sf::VideoMode(Resolution.x, Resolution.y), "Cat & Mouse");
     Track RaceTrack;
-    Car::initTexture();
+    Car::init();
     sf::Event Event;
     Menu menu(Window);
     Game game;
     Editor editor;
     while (Window.isOpen())
     {
+
         if (game.GameActive==1)
         {
             game.ProcessEvents(Event);
@@ -37,6 +39,7 @@ int main()
 
         if (editor.EditorActive==1)
         {
+            sf::sleep(sf::milliseconds(1));
             editor.ProcessEvents(Event);
             if (editor.getTime()-cycleaccumulator*CycleTime>CycleTime)
             {
@@ -52,6 +55,7 @@ int main()
 
         if (game.GameActive==0 && editor.EditorActive==0)
         {
+            sf::sleep(sf::milliseconds(1));
             menu.ProcessEvents(Event);
             menu.Update();
             menu.Render();
@@ -66,6 +70,7 @@ int main()
             if (menu.StartEditor==1)
             {
                 RaceTrack.init(menu.Config.TrackNumber);
+                editor= Editor();
                 editor.init(menu.Config,RaceTrack,Window);
                 cycleaccumulator=0;
                 frameaccumulator=0;
@@ -74,5 +79,6 @@ int main()
         }
 
     }
+    //timeEndPeriod(1);
     return 0;
 }

@@ -4,56 +4,55 @@
 Track::Track(){
 }
 
-void Track::init(int TrackNumber)
+void Track::init(unsigned TrackNumber)
 {
     Texture.loadFromFile("TrackSprites.png");
     Size=32;
     ReadTrack(TrackNumber);
-
-    for (unsigned int i=0; i<FinishLine.size();i++)
-    {
-        Tiles[FinishLine[i].x][FinishLine[i].y].Types=sf::Vector2u(5,5);
-        Tiles[FinishLine[i].x][FinishLine[i].y].isSquare=1;
-    }
 }
 
 
-sf::Vector2u Track::getDim(){
+Vector2u Track::getDim(){
     return Dim;
 }
 
-int Track::getSize(){
+unsigned Track::getSize(){
     return Size;
 }
 
 
-Tile* Track::getTile(int i, int j){
-return &Tiles[i][j];
+Tile* Track::getTile(unsigned i, unsigned j){
+    return &Tiles[i][j];
 }
 
-sf::Vector2u Track::getStartingPosition(){
-    return StartingPosition;
+
+sf::Texture *Track::getTexture(){
+    return &Texture;
 }
 
-void Track::setStartingPosition(sf::Vector2u NewStarting){
-    StartingPosition=NewStarting;
+
+void Track::RefreshDetection(){
+    vector<vector<unsigned>> DetectionList;
+    DetectionList.reserve(6);
+    DetectionList[0]={FALL};
+    DetectionList[1]={NORMTRACTION};
+    DetectionList[2]={WALL};
+    DetectionList[3]={SLIDING};
+    DetectionList[4]={NORMTRACTION,FINISH};
+    for (unsigned i=0;i<Dim.x;i++)
+    {
+        for (unsigned j=0;j<Dim.y;j++)
+        {
+            Tile *CurrentTile=getTile(i,j);
+            CurrentTile->Detection.x=DetectionList[CurrentTile->Types.x];
+            CurrentTile->Detection.y=DetectionList[CurrentTile->Types.y];
+        }
+    }
 }
 
-vector<sf::Vector2u> Track::getFinishLine(){
-    return FinishLine;
-}
-
-void Track::setFinishLine(vector<sf::Vector2u> NewFinishLine){
-    FinishLine=NewFinishLine;
-}
-
-sf::Texture* Track::getTexture(){
-return &Texture;
-}
-
-void Track::ReadTrack(int TrackNumber){
+void Track::ReadTrack(unsigned TrackNumber){
     string InputString;
-    vector<int> InputInt(10);
+    vector<unsigned> InputInt(10);
     ifstream Input("Tracks.txt",ios::binary);
     bool TrackFound=0;
     while (TrackFound==0 && !Input.eof())
@@ -81,42 +80,50 @@ void Track::ReadTrack(int TrackNumber){
         Dim=sf::Vector2u(InputInt[0],InputInt[1]);
         Input>>InputString;
         Input>>InputInt[0];
-        Input>>InputInt[1];
-        StartingPosition=sf::Vector2u(InputInt[0],InputInt[1]);
+        FinishDirection=InputInt[0];
         Input>>InputString;
-        bool FinishGoing=1;
+        Input>>InputInt[0];
+        TotalStarting=InputInt[0];
+        Input>>InputString;
+        Input>>InputInt[0];
+        Input>>InputInt[1];
+        StartingPositions.clear();
+        StartingPositions.push_back(Vector2u(InputInt[0],InputInt[1]));
+        bool KeepGoing=1;
         streampos onestepback=Input.tellg();
         Input>>InputString;
         if (InputString.compare("Tiles:")==0)
         {
-            FinishGoing=0;
+            KeepGoing=0;
         }
         else{
             Input.seekg(onestepback);
         }
-        while (FinishGoing && !Input.eof())
+        while (KeepGoing)
         {
             Input>>InputInt[0];
             Input>>InputInt[1];
-            FinishLine.push_back(sf::Vector2u(InputInt[0],InputInt[1]));
+            StartingPositions.push_back(Vector2u(InputInt[0],InputInt[1]));
             onestepback=Input.tellg();
             Input>>InputString;
             if (InputString.compare("Tiles:")==0)
             {
-                FinishGoing=0;
+                KeepGoing=0;
             }
             else{
                 Input.seekg(onestepback);
             }
         }
+
+
         Tile tile;
         vector<Tile> VectorTile(Dim.y,tile);
         vector<vector<Tile>> MatrixTile(Dim.x,VectorTile);
-        unsigned int index=0;
+        unsigned index=0;
         while (index< Dim.x*Dim.y)
         {
-            unsigned int i=index%Dim.x;
-            unsigned int j=index/Dim.x;
+            unsigned i=index%Dim.x;
+            unsigned j=index/Dim.x;
             Input>>InputString;
             if(InputString.compare(0,1, "[" )==0)
             {
@@ -144,22 +151,23 @@ void Track::ReadTrack(int TrackNumber){
 
 
 
-void Track::WriteTrack(int TrackNumber){
+void Track::WriteTrack(unsigned TrackNumber){
     ofstream Input("Tracks.txt",ios::app);
     Input<<"\n\n\n--StartTrack--\n\n"<<"TrackNumber: "<< TrackNumber << "\n";
     Input<<"Width: "<<Dim.x<<" Height: "<<Dim.y<<"\n";
-    Input<<"StartingPosition: "<<StartingPosition.x<<" "<<StartingPosition.y<<"\n";
-    Input<<"FinishLine: ";
-    for(unsigned int i=0; i<FinishLine.size(); i++)
+    Input<<"FinishingDirection: "<<FinishDirection<<"\n";
+    Input<<"TotalStartingPlayers: "<<TotalStarting<<"\n";
+    Input<<"StartingPositions: ";
+    for(unsigned i=0; i<StartingPositions.size(); i++)
     {
-        Input<<FinishLine[i].x<<" "<<FinishLine[i].y<<"\n";
+        Input<<StartingPositions[i].x<<" "<<StartingPositions[i].y<<"\n";
     }
     Input<<"\n";
     Input<<"Tiles: ";
-    for(unsigned int index=0; index<Dim.x*Dim.y; index++)
+    for(unsigned index=0; index<Dim.x*Dim.y; index++)
     {
-        unsigned int i=index%Dim.x;
-        unsigned int j=index/Dim.x;
+        unsigned i=index%Dim.x;
+        unsigned j=index/Dim.x;
         if (Tiles[i][j].Orientation==1)
         {
             Input<<"[";
@@ -178,11 +186,11 @@ void Track::WriteTrack(int TrackNumber){
     Input.close(); //close it
 }
 
-void Track::FlushTrack(int TrackNumber){
+void Track::FlushTrack(unsigned TrackNumber){
     ifstream Input("Tracks.txt",ios::binary);
     string InputString;
-    int InputInt;
-    vector<int> TrackNumberList;
+    unsigned InputInt;
+    vector<unsigned> TrackNumberList;
     bool TrackFound=0;
     while(!Input.eof())
     {
@@ -202,15 +210,14 @@ void Track::FlushTrack(int TrackNumber){
     vector<Track> Tracks;
     Track EmptyTrack;
     if (TrackFound==1){
-        cout<<"Here!"<<endl;
-        for (unsigned int i=0; i< TrackNumberList.size();i++)
+        for (unsigned i=0; i< TrackNumberList.size();i++)
         {
             Tracks.push_back(EmptyTrack);
             Tracks[i].ReadTrack(TrackNumberList[i]);
         }
         ofstream EmptyData("Tracks.txt");
         EmptyData.close();
-        for (unsigned int i=0; i< TrackNumberList.size();i++)
+        for (unsigned i=0; i< TrackNumberList.size();i++)
         {
             if (TrackNumber!=TrackNumberList[i])
             {
@@ -220,24 +227,28 @@ void Track::FlushTrack(int TrackNumber){
     }
 }
 
-void Track::SetBlank(sf::Vector2u NewDim){
+void Track::SetBlank(Vector2u NewDim){
     Texture.loadFromFile("TrackSprites.png");
     Size=32;
     Dim=NewDim;
-    StartingPosition=sf::Vector2u();
+    StartingPositions.clear();
+    for (unsigned i=0; i<8; ++i)
+    {
+        StartingPositions.push_back(sf::Vector2u(i,0));
+    }
+
     Tile tile;
     vector<Tile> VectorTile(Dim.y,tile);
     vector<vector<Tile>> MatrixTile(Dim.x,VectorTile);
-    unsigned int index=0;
+    unsigned index=0;
     while (index< Dim.x*Dim.y)
     {
-        unsigned int i=index%Dim.x;
-        unsigned int j=index/Dim.x;
+        unsigned i=index%Dim.x;
+        unsigned j=index/Dim.x;
         MatrixTile[i][j].Orientation=0;
         MatrixTile[i][j].isSquare=1;
         MatrixTile[i][j].Types=sf::Vector2u(1,1);
         index++;
     }
     Tiles=MatrixTile;
-    TrackReady=1;
 }

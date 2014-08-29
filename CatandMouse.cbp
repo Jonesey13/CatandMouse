@@ -30,6 +30,7 @@
 					<Add library="sfml-graphics-2" />
 					<Add library="sfml-window-2" />
 					<Add library="sfml-system-2" />
+					<Add library="winmm" />
 				</Linker>
 			</Target>
 		</Build>
@@ -37,15 +38,14 @@
 			<Add option="-Wall" />
 		</Compiler>
 		<Unit filename="car.cpp" />
+		<Unit filename="clickable.h" />
 		<Unit filename="editor.cpp" />
 		<Unit filename="functions.cpp" />
 		<Unit filename="game.cpp" />
 		<Unit filename="header.h" />
 		<Unit filename="main.cpp" />
 		<Unit filename="menu.cpp" />
-		<Unit filename="tile.cpp" />
 		<Unit filename="track.cpp" />
-		<Unit filename="tracklist.cpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />

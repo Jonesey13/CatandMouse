@@ -4,36 +4,36 @@ Game::Game(){
     GameActive=0;
 }
 
-float Game::getTime(){
-return Clock.getElapsedTime().asSeconds();
+double Game::getTime(){
+    return Clock.getElapsedTime().asSeconds();
 }
 
-void Game::init(Configuration& NewConfig, Track& NewTrack, sf::RenderWindow& NewWindow){
+void Game::init(Configuration &NewConfig, Track &NewTrack, sf::RenderWindow &NewWindow){
     GameActive=1;
     Config=NewConfig;
     track=&NewTrack;
     Window=&NewWindow;
-    sf::Vector2u Resolution=Window->getSize();
+    Vector2u Resolution=Window->getSize();
     TrackTiles.setPrimitiveType(sf::Triangles);
-    sf::Vector2u TrackDim=track->getDim();
+    Vector2u TrackDim=track->getDim();
     int TileSize=track->getSize();
-    sf::Vector2f TrackRes=sf::Vector2f(TileSize*TrackDim.x,TileSize*TrackDim.y);
+    Vector2d TrackRes=Vector2d(TileSize*TrackDim.x,TileSize*TrackDim.y);
     Scaling=min(Resolution.x/TrackRes.x, Resolution.y/TrackRes.y);
 
-    Car::initTexture();
+    Car::init();
     Car car;
-    for(unsigned int i=0; i< Config.NumberOfPlayers; i++){
+    for(unsigned i=0; i< Config.NumberOfPlayers; i++){
         Player.push_back(car);
-        int Size=track->getSize();
-        int StartingX=track->getStartingPosition().x*Size;
-        int StartingY=track->getStartingPosition().y*Size;
-        Player[i].setPosition(sf::Vector2f(StartingX+Size/2,StartingY+Size/2+Size*i));
+        unsigned Size=track->getSize();
+        unsigned StartingX=track->StartingPositions[0].x*Size;
+        unsigned StartingY=track->StartingPositions[0].y*Size;
+        Player[i].Position=Vector2d(StartingX+Size/2,StartingY+Size/2+Size*i);
     }
     Clock.restart();
 }
 
 
-void Game::ProcessEvents(sf::Event& Event){
+void Game::ProcessEvents(sf::Event &Event){
     while (Window->pollEvent(Event))
     {
         switch (Event.type)
@@ -95,77 +95,64 @@ void Game::ProcessEvents(sf::Event& Event){
     }
 }
 
-void Game::Update(float DeltaTime){
-    for (unsigned int i=0; i<Player.size() ; i++)
+void Game::Update(double DeltaTime){
+    for (unsigned i=0; i<Player.size() ; i++)
     {
         Player[i].Update(DeltaTime);
     }
 }
 
 void Game::Render(){
-    sf::Vector2u TrackDim=track->getDim();
+    Vector2u TrackDim=track->getDim();
     TrackTiles.resize((TrackDim.x*TrackDim.y)*6);
-    int current=0;
-    for (unsigned int i=0; i<TrackDim.x;++i)
+    unsigned current=0;
+    for (unsigned i=0; i<TrackDim.x;++i)
     {
-        for (unsigned int j=0; j< TrackDim.y;++j)
+        for (unsigned j=0; j< TrackDim.y;++j)
         {
-            sf::Vector2i Pos=sf::Vector2i(i,j);
-            if(track->getTile(i,j)->isSquare==1)
-            {
-                sf::Vertex* tri = &TrackTiles[current * 3];
-                sf::Vector2i TextPos=sf::Vector2i(0,track->getTile(i,j)->Types.x);
-                PrepareandScaleTriangle(tri,TextPos,Pos,0);
-                current++;
-                tri = &TrackTiles[current * 3];
-                TextPos=sf::Vector2i(0,track->getTile(i,j)->Types.x);
-                PrepareandScaleTriangle(tri,TextPos,Pos,2);
-                current++;
-            }
-            else{
-                sf::Vertex* tri= &TrackTiles[current * 3];
-                sf::Vector2i TextPos=sf::Vector2i(0,track->getTile(i,j)->Types.x);
-                PrepareandScaleTriangle(tri,TextPos,Pos,track->getTile(i,j)->Orientation);
-                current++;
-                tri = &TrackTiles[current * 3];
-                TextPos=sf::Vector2i(0,track->getTile(i,j)->Types.y);
-                PrepareandScaleTriangle(tri,TextPos,Pos,track->getTile(i,j)->Orientation+2);
-                current++;
-            }
+            Vector2i Pos=Vector2i(i,j);
+            sf::Vertex *tri= &TrackTiles[current * 3];
+            Vector2i TextPos=Vector2i(0,track->getTile(i,j)->Types.x);
+            PrepareandScaleTriangle(tri,TextPos,Pos,track->getTile(i,j)->Orientation);
+            current++;
+            tri = &TrackTiles[current * 3];
+            TextPos=Vector2i(0,track->getTile(i,j)->Types.y);
+            PrepareandScaleTriangle(tri,TextPos,Pos,track->getTile(i,j)->Orientation+2);
+            current++;
         }
     }
     Window->draw(TrackTiles,track->getTexture());
 
     sf::Sprite PlayerSprite;
-    int Size=Car::getSize();
+    unsigned Size=Car::getSize();
     PlayerSprite.setTexture(*Car::getTexture());
     PlayerSprite.setOrigin(Size/2,Size/2);
-    for (unsigned int i=0; i<Player.size() ; i++)
+    for (unsigned i=0; i<Player.size() ; i++)
     {
-        PlayerSprite.setPosition(Scaling*Player[i].getPosition());
+        PlayerSprite.setPosition(Double2Float(Scaling*Player[i].Position));
         PlayerSprite.setScale(Scaling,Scaling);
         PlayerSprite.setTextureRect(sf::IntRect(i*Size, 0, Size, Size));
-        PlayerSprite.setRotation(360*Player[i].getRotation());
+        PlayerSprite.setRotation(360*Player[i].Rotation);
         Window->draw(PlayerSprite);
     }
     Window->display();
     Window->clear();
 }
 
-void Game::PrepareandScaleTriangle(sf::Vertex* tri, sf::Vector2i TextPos, sf::Vector2i Pos, int Orientation){
-    int Size=track->getSize();
+void Game::PrepareandScaleTriangle(sf::Vertex *tri, Vector2i TextPos, Vector2i Pos, unsigned Orientation){
+    unsigned Size=track->getSize();
     vector<sf::Vertex> quad(4);
-    quad[0].position=Scaling*sf::Vector2f(Pos.x*Size, Pos.y*Size);
-    quad[1].position=Scaling*sf::Vector2f(Pos.x*Size, (Pos.y+1)*Size);
-    quad[2].position=Scaling*sf::Vector2f((Pos.x+1)*Size, (Pos.y+1)*Size);
-    quad[3].position=Scaling*sf::Vector2f((Pos.x+1)*Size, Pos.y*Size);
+    quad[0].position=Double2Float(Scaling*Vector2d(Pos.x*Size, Pos.y*Size));
+    quad[1].position=Double2Float(Scaling*Vector2d(Pos.x*Size, (Pos.y+1)*Size));
+    quad[2].position=Double2Float(Scaling*Vector2d((Pos.x+1)*Size, (Pos.y+1)*Size));
+    quad[3].position=Double2Float(Scaling*Vector2d((Pos.x+1)*Size, Pos.y*Size));
 
-    quad[0].texCoords=sf::Vector2f(TextPos.x*Size, TextPos.y*Size);
-    quad[1].texCoords=sf::Vector2f(TextPos.x*Size, (TextPos.y+1)*Size);
-    quad[2].texCoords=sf::Vector2f((TextPos.x+1)*Size, (TextPos.y+1)*Size);
-    quad[3].texCoords=sf::Vector2f((TextPos.x+1)*Size, TextPos.y*Size);
+    quad[0].texCoords=Vector2f(TextPos.x*Size, TextPos.y*Size);
+    quad[1].texCoords=Vector2f(TextPos.x*Size, (TextPos.y+1)*Size);
+    quad[2].texCoords=Vector2f((TextPos.x+1)*Size, (TextPos.y+1)*Size);
+    quad[3].texCoords=Vector2f((TextPos.x+1)*Size, TextPos.y*Size);
 
-    for (unsigned int i=0; i<3; i++)
+    for (unsigned i=0; i<3; i++)
     {
         tri[i]=quad[(i+Orientation)%4];
     }
