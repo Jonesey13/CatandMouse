@@ -1,0 +1,25 @@
+NumberOfLaps: 3
+ControllerSettings: Player1: Joystick: 0
+0   Accelerate
+1   Brake
+Player2: Joystick: 3
+6   Brake
+7   Accelerate
+Player3: Joystick: 2
+0   Accelerate
+1   Brake
+Player4: NoJoystick: 
+0   Accelerate
+1   Brake
+Player5: Joystick: 4
+0   Accelerate
+1   Brake
+Player6: Joystick: 5
+0   Accelerate
+1   Brake
+Player7: Joystick: 6
+0   Accelerate
+1   Brake
+Player8: Joystick: 7
+0   Accelerate
+1   Brake

@@ -1,4 +1,5 @@
-#include "header.h"
+#include "track.h"
+#include "functions.h"
 
 
 Track::Track(){
@@ -6,8 +7,6 @@ Track::Track(){
 
 void Track::init(unsigned TrackNumber)
 {
-    Texture.loadFromFile("TrackSprites.png");
-    Size=32;
     ReadTrack(TrackNumber);
 }
 
@@ -16,9 +15,6 @@ Vector2u Track::getDim(){
     return Dim;
 }
 
-unsigned Track::getSize(){
-    return Size;
-}
 
 
 Tile* Track::getTile(unsigned i, unsigned j){
@@ -26,19 +22,14 @@ Tile* Track::getTile(unsigned i, unsigned j){
 }
 
 
-sf::Texture *Track::getTexture(){
-    return &Texture;
-}
-
-
 void Track::RefreshDetection(){
-    vector<vector<unsigned>> DetectionList;
-    DetectionList.reserve(6);
-    DetectionList[0]={FALL};
-    DetectionList[1]={NORMTRACTION};
-    DetectionList[2]={WALL};
-    DetectionList[3]={SLIDING};
-    DetectionList[4]={NORMTRACTION,FINISH};
+    vector<set<string>> DetectionList;
+    DetectionList.resize(6);
+    DetectionList[0]={"FALL"};
+    DetectionList[1]={"NORMAL_TRACTION"};
+    DetectionList[2]={"WALL"};
+    DetectionList[3]={"SLIDING_TRACTION"};
+    DetectionList[4]={"NORMAL_TRACTION","FINISH"};
     for (unsigned i=0;i<Dim.x;i++)
     {
         for (unsigned j=0;j<Dim.y;j++)
@@ -49,6 +40,38 @@ void Track::RefreshDetection(){
         }
     }
 }
+
+vector<Vector2d> Track::getTileBounding(unsigned i, unsigned j, bool TriangleHalf){
+    Tile* tile=getTile(i,j);
+    vector<Vector2d> Bounding;
+    if (tile->isSquare)
+    {
+        Bounding={Vector2d(i,j),Vector2d(i,j+1),Vector2d(i+1,j+1),Vector2d(i+1,j)};
+    }
+    else{
+        bool Orientation=tile->Orientation;
+        if(Orientation==0)
+        {
+            if (TriangleHalf==0)
+            {
+                Bounding={Vector2d(i,j),Vector2d(i,j+1),Vector2d(i+1,j+1)};
+            }
+            else{
+                Bounding={Vector2d(i,j),Vector2d(i+1,j+1),Vector2d(i+1,j)};
+            }
+        }
+        else{
+            if (TriangleHalf==0)
+            {
+                Bounding={Vector2d(i,j+1),Vector2d(i+1,j+1),Vector2d(i+1,j)};
+            }
+            else{
+                Bounding={Vector2d(i,j),Vector2d(i,j+1),Vector2d(i+1,j)};
+            }
+        }
+    }
+    return Bounding;
+ }
 
 void Track::ReadTrack(unsigned TrackNumber){
     string InputString;
@@ -228,8 +251,6 @@ void Track::FlushTrack(unsigned TrackNumber){
 }
 
 void Track::SetBlank(Vector2u NewDim){
-    Texture.loadFromFile("TrackSprites.png");
-    Size=32;
     Dim=NewDim;
     StartingPositions.clear();
     for (unsigned i=0; i<8; ++i)
@@ -251,4 +272,20 @@ void Track::SetBlank(Vector2u NewDim){
         index++;
     }
     Tiles=MatrixTile;
+}
+
+
+
+bool Track::getFinishSquareHalf(Vector2d Position){
+    Vector2u TilePosition=Vector2u(Position.x,Position.y);
+    bool Vertical=FinishDirection%2;
+    bool Negative=FinishDirection/2;
+    if(Vertical==0)
+    {
+        return ((1-2*Negative)*(Position.x-TilePosition.x-0.5)>0);
+    }
+    else
+    {
+        return ((1-2*Negative)*(Position.y-TilePosition.y-0.5)>0);
+    }
 }

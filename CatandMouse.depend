@@ -39,10 +39,10 @@
 1408199336 source:c:\users\alex jones\documents\catandmouse\editor.cpp
 	"header.h"
 
-1408999661 source:c:\users\alex jones\documents\github\catandmouse\car.cpp
-	"header.h"
+1412110917 source:c:\users\alex jones\documents\github\catandmouse\car.cpp
+	"car.h"
 
-1409326247 c:\users\alex jones\documents\github\catandmouse\header.h
+1410028267 c:\users\alex jones\documents\github\catandmouse\header.h
 	<SFML/System.hpp>
 	<SFML/Window.hpp>
 	<SFML/Graphics.hpp>
@@ -57,29 +57,176 @@
 	<iostream>
 	"clickable.h"
 
-1409326525 source:c:\users\alex jones\documents\github\catandmouse\editor.cpp
-	"header.h"
+1412421303 source:c:\users\alex jones\documents\github\catandmouse\editor.cpp
+	"editor.h"
 
-1409071010 source:c:\users\alex jones\documents\github\catandmouse\functions.cpp
-	"header.h"
+1412109572 source:c:\users\alex jones\documents\github\catandmouse\functions.cpp
+	"functions.h"
 
-1409071889 source:c:\users\alex jones\documents\github\catandmouse\game.cpp
-	"header.h"
+1412532951 source:c:\users\alex jones\documents\github\catandmouse\game.cpp
+	"game.h"
 
-1409325609 source:c:\users\alex jones\documents\github\catandmouse\main.cpp
-	"header.h"
+1412421355 source:c:\users\alex jones\documents\github\catandmouse\main.cpp
+	"game.h"
+	"track.h"
+	"editor.h"
+	"menu.h"
 
-1409326541 source:c:\users\alex jones\documents\github\catandmouse\menu.cpp
-	"header.h"
+1412535143 source:c:\users\alex jones\documents\github\catandmouse\menu.cpp
+	"menu.h"
 
 1408653721 source:c:\users\alex jones\documents\github\catandmouse\tile.cpp
 	"header.h"
 
-1409310165 source:c:\users\alex jones\documents\github\catandmouse\track.cpp
-	"header.h"
+1412110991 source:c:\users\alex jones\documents\github\catandmouse\track.cpp
+	"track.h"
+	"functions.h"
 
 1409246185 source:c:\users\alex jones\documents\github\catandmouse\clickable.cpp
 	"header.h"
 
-1409307477 c:\users\alex jones\documents\github\catandmouse\clickable.h
+1410254716 c:\users\alex jones\documents\github\catandmouse\clickable.h
+	<SFML/System.hpp>
+	<SFML/Window.hpp>
+	<SFML/Graphics.hpp>
+	<SFML/Audio.hpp>
+	<vector>
+	<string>
+
+1412110891 c:\users\alex jones\documents\github\catandmouse\car.h
+	"functions.h"
+
+1412109161 c:\users\alex jones\documents\github\catandmouse\functions.h
+	<SFML/System.hpp>
+	<SFML/Window.hpp>
+	<SFML/Graphics.hpp>
+	<SFML/Audio.hpp>
+	<vector>
+	<math.h>
+	<iostream>
+	<numeric>
+	<algorithm>
+
+1412421297 c:\users\alex jones\documents\github\catandmouse\editor.h
+	"editoroptions.h"
+	"track.h"
+	"clickable.h"
+	"functions.h"
+	"renderfunctions.h"
+	<iostream>
+	<sstream>
+
+1412532221 c:\users\alex jones\documents\github\catandmouse\configuration.h
+	<SFML/System.hpp>
+	<SFML/Window.hpp>
+	<SFML/Graphics.hpp>
+	<SFML/Audio.hpp>
+	<vector>
+	<map>
+	<fstream>
+	<iostream>
+	<sstream>
+	"configstorable.h"
+	"configunsigned.h"
+	"configcontroller.h"
+
+1412110991 c:\users\alex jones\documents\github\catandmouse\track.h
+	<iostream>
+	<fstream>
+	<sstream>
+	"tile.h"
+
+1411998150 c:\users\alex jones\documents\github\catandmouse\tile.h
+	<SFML/System.hpp>
+	<SFML/Window.hpp>
+	<SFML/Graphics.hpp>
+	<SFML/Audio.hpp>
+	<vector>
+	<set>
+
+1412292039 c:\users\alex jones\documents\github\catandmouse\game.h
+	"configuration.h"
+	"race.h"
+	"pauseitem.h"
+
+1412450326 c:\users\alex jones\documents\github\catandmouse\menu.h
+	"menuitem.h"
+	"configuration.h"
+	"editoroptions.h"
+	"track.h"
+	<vector>
+	<string>
+	<sstream>
+
+1412341618 c:\users\alex jones\documents\github\catandmouse\menuitem.h
+	<SFML/System.hpp>
+	<SFML/Window.hpp>
+	<SFML/Graphics.hpp>
+	<SFML/Audio.hpp>
+	<string>
+
+1412025707 c:\users\alex jones\documents\github\catandmouse\race.h
+	"car.h"
+	"track.h"
+	"configuration.h"
+
+1412111071 source:c:\users\alex jones\documents\github\catandmouse\race.cpp
+	"race.h"
+
+1410724236 source:c:\users\alex jones\documents\github\catandmouse\menuitem.cpp
+	"menuitem.h"
+
+1412023650 c:\users\alex jones\documents\github\catandmouse\pauseitem.h
+	<SFML/System.hpp>
+	<SFML/Window.hpp>
+	<SFML/Graphics.hpp>
+	<SFML/Audio.hpp>
+	<string>
+
+1410649101 source:c:\users\alex jones\documents\github\catandmouse\pauseitem.cpp
+	"pauseitem.h"
+
+1412173571 c:\users\alex jones\documents\github\catandmouse\renderfunctions.h
+	<SFML/System.hpp>
+	<SFML/Window.hpp>
+	<SFML/Graphics.hpp>
+	<SFML/Audio.hpp>
+	<vector>
+	<string>
+	<iostream>
+
+1412173489 source:c:\users\alex jones\documents\github\catandmouse\renderfunctions.cpp
+	"renderfunctions.h"
+
+1412521329 source:c:\users\alex jones\documents\github\catandmouse\configuration.cpp
+	"configuration.h"
+
+1412421135 c:\users\alex jones\documents\github\catandmouse\editoroptions.h
+	<SFML/System.hpp>
+	<SFML/Window.hpp>
+	<SFML/Graphics.hpp>
+	<SFML/Audio.hpp>
+	<vector>
+	<map>
+	<fstream>
+
+1412506778 source:c:\users\alex jones\documents\github\catandmouse\configunsigned.cpp
+	"configuration.h"
+
+1412463376 c:\users\alex jones\documents\github\catandmouse\configunsigned.h
+	<string>
+
+1412463353 c:\users\alex jones\documents\github\catandmouse\configstorable.h
+	<SFML/System.hpp>
+	<SFML/Window.hpp>
+	<SFML/Graphics.hpp>
+	<SFML/Audio.hpp>
+	<vector>
+	<map>
+	<fstream>
+
+1412536516 source:c:\users\alex jones\documents\github\catandmouse\configcontroller.cpp
+	"configuration.h"
+
+1412532353 c:\users\alex jones\documents\github\catandmouse\configcontroller.h
 

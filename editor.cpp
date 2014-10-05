@@ -1,17 +1,17 @@
-#include "header.h"
+#include "editor.h"
 
-Editor::Editor(){
-    EditorActive=0;
-}
 
-double Editor::getTime(){
-    return Clock.getElapsedTime().asSeconds();
-}
-
-void Editor::init(Configuration &NewConfig, Track &NewTrack, sf::RenderWindow &NewWindow){
+void Editor::init(EditorOptions &NewEditOptions, sf::RenderWindow &NewWindow,unsigned &cycles, unsigned &frames){
     ButtonTexture.loadFromFile("EditorSprites.png");
+    TrackTexture.loadFromFile("TrackSprites.png");
     font.loadFromFile("Aller.ttf");
     EditorActive=1;
+
+    frameptr=&frames;
+    *frameptr=0;
+    cycleptr=&cycles;
+    *cycleptr=0;
+
     ClickLeft=0;
     ClickRight=0;
     ExitFlag=0;
@@ -21,18 +21,28 @@ void Editor::init(Configuration &NewConfig, Track &NewTrack, sf::RenderWindow &N
     PaintSelection=0;
     PlayerSelection=0;
     OverLayON=1;
-    Config=NewConfig;
-    track=&NewTrack;
+
+
+
+    EditOptions=NewEditOptions;
+
+    if (EditOptions.BlankTrack==1)
+    {
+        track.SetBlank(EditOptions.NewTrackDim);
+    }
+    else{
+        track.ReadTrack(EditOptions.TrackNumber);
+    }
+
     Window=&NewWindow;
     Vector2u Resolution=Window->getSize();
     TrackTiles.setPrimitiveType(sf::Triangles);
     OverLay.setPrimitiveType(sf::Lines);
-    Vector2u TrackDim=track->getDim();
-    unsigned TileSize=track->getSize();
-    Vector2u TrackRes=Vector2u(TileSize*TrackDim.x,TileSize*TrackDim.y);
-    Scaling=min((double)Resolution.x/(double)TrackRes.x, (double)Resolution.y/(double)TrackRes.y);
-    ScalingTrack=0.85d*Scaling;
-    ScalingTools=0.15d*Scaling;
+    Vector2u TrackDim=track.getDim();
+    Vector2u TrackRes=Vector2u(TrackDim.x,TrackDim.y);
+    Scaling=min(Resolution.x/static_cast<double>(TrackRes.x), Resolution.y/static_cast<double>(TrackRes.y));
+    ScalingTrack=0.85*Scaling;
+    ScalingTools=0.15*Scaling;
 
     ToolBoxes.setPrimitiveType(sf::Quads);
     ToolBoxes.resize(8);
@@ -48,22 +58,21 @@ void Editor::init(Configuration &NewConfig, Track &NewTrack, sf::RenderWindow &N
         ToolBoxes[i].color=sf::Color(80,80,80);
 
     bool *BoolPointer=&OverLayON;
-    sf::Font *FontPointer=&font;
     Clickable<bool> OverLayButton=Clickable<bool>(BoolPointer,vector<Vector2i>{Vector2i(0,1),Vector2i(0,0)},0.05*Resolution.x
-                                  , Vector2f(0.9*Resolution.x, 0.1*Resolution.y),FontPointer,vector<string>{"Overlay", "ON/OFF"},0.02*Resolution.x,32);
+                                  , Vector2f(0.9*Resolution.x, 0.1*Resolution.y),vector<string>{"Overlay", "ON/OFF"},0.02*Resolution.x);
     ClickableBools.push_back(OverLayButton);
-    unsigned *UnsignedPointer=&track->FinishDirection;
+    unsigned *UnsignedPointer=&track.FinishDirection;
     Clickable<unsigned> DirectionButton=Clickable<unsigned>(UnsignedPointer,vector<Vector2i>{Vector2i(1,0),Vector2i(1,1),Vector2i(1,2),Vector2i(1,3)},0.05*Resolution.x
-                                  , Vector2f(0.9*Resolution.x, 0.3*Resolution.y),FontPointer,vector<string>{"Finishing", "Direction"},0.02*Resolution.x,32);
+                                  , Vector2f(0.9*Resolution.x, 0.3*Resolution.y),vector<string>{"Finishing", "Direction"},0.02*Resolution.x);
     ClickableUnsigneds.push_back(DirectionButton);
-    UnsignedPointer=&track->TotalStarting;
+    UnsignedPointer=&track.TotalStarting;
     vector<Vector2i> textpos(8,Vector2i());
     for (unsigned i=0; i<8; ++i)
     {
         textpos[i]=Vector2i(2,i);
     }
     Clickable<unsigned> TotalPlayersButton=Clickable<unsigned>(UnsignedPointer,textpos,0.05*Resolution.x, Vector2f(0.9*Resolution.x, 0.5*Resolution.y)
-                                           ,FontPointer,vector<string>{"No. Starting", "Players"},0.02*Resolution.x,32,1);
+                                           ,vector<string>{"No. Starting", "Players"},0.02*Resolution.x,1);
     ClickableUnsigneds.push_back(TotalPlayersButton);
 
     textpos.resize(5);
@@ -73,7 +82,7 @@ void Editor::init(Configuration &NewConfig, Track &NewTrack, sf::RenderWindow &N
     }
     UnsignedPointer=&PaintSelection;
     ClickableSelection=Clickable<unsigned>(UnsignedPointer,textpos,0.05*Resolution.x, Vector2f(0.1*Resolution.x, 0.9*Resolution.y)
-                                           ,FontPointer,vector<string>{"Paint Selection"},0.02*Resolution.x,32);
+                                           ,vector<string>{"Paint Selection"},0.02*Resolution.x);
 
     sf::CircleShape Circle=sf::CircleShape(50);
     sf::Text text=sf::Text();
@@ -83,31 +92,19 @@ void Editor::init(Configuration &NewConfig, Track &NewTrack, sf::RenderWindow &N
     {
         StartingCircles.push_back(Circle);
         StartingCircles[i]=sf::CircleShape(50);
-        StartingCircles[i].setRadius(Scaling*10);
+        StartingCircles[i].setRadius(Scaling*0.3);
         StartingCircles[i].setFillColor(sf::Color::Green);
         sf::FloatRect  CircleRect = StartingCircles[i].getLocalBounds();
         StartingCircles[i].setOrigin(CircleRect.left + CircleRect.width/2.0f,CircleRect.top  + CircleRect.height/2.0f);
 
         StartingNumbers.push_back(text);
-        StartingNumbers[i].setFont(font);
         ostringstream convert;
         convert<<i+1;
-        StartingNumbers[i].setString(convert.str());
-        StartingNumbers[i].setCharacterSize(15*Scaling);
-        StartingNumbers[i].setColor(sf::Color::Red);
-        sf::FloatRect TextRect = StartingNumbers[i].getLocalBounds();
-        StartingNumbers[i].setOrigin(TextRect.left + TextRect.width/2.0f,TextRect.top  + TextRect.height/2.0f);
+        AdjustText(StartingNumbers[i],convert.str(),&font,0.5*Scaling,sf::Color::Red);
     }
     Clock.restart();
 
-
-    ExitMessage.setFont(font);
-    ExitMessage.setString("Save File? (Y/N)");
-    ExitMessage.setCharacterSize(40*Scaling);
-    ExitMessage.setColor(sf::Color::Yellow);
-    sf::FloatRect TextRect = ExitMessage.getLocalBounds();
-    ExitMessage.setOrigin(TextRect.left + TextRect.width/2.0f,TextRect.top  + TextRect.height/2.0f);
-    ExitMessage.setPosition(sf::Vector2f(Resolution.x/2,Resolution.y/2));
+    AdjustText(ExitMessage,"Save File? (Y/N)",&font,Scaling,sf::Color::Yellow,Vector2d(Resolution.x/2,Resolution.y/2));
 
 
 }
@@ -163,9 +160,6 @@ void Editor::ProcessEvents(sf::Event &Event){
             case sf::Keyboard::Num4:
                 PaintSelection=4;
                 break;
-            case sf::Keyboard::Num5:
-                PaintSelection=5;
-                break;
             case sf::Keyboard::Y:
                 if(PreExitFlag==1)
                 {
@@ -184,7 +178,7 @@ void Editor::ProcessEvents(sf::Event &Event){
                 StartFlag=1;
                 break;
             case sf::Keyboard::D:
-                if (PlayerSelection<track->TotalStarting-1)
+                if (PlayerSelection<track.TotalStarting-1)
                     PlayerSelection++;
                 else
                     PlayerSelection=0;
@@ -209,12 +203,14 @@ void Editor::ProcessEvents(sf::Event &Event){
 }
 
 void Editor::Update(double DeltaTime){
+    Vector2i LocalMousePosition = sf::Mouse::getPosition(*Window);
+    Vector2d MousePosition=Vector2d(LocalMousePosition.x,LocalMousePosition.y)/static_cast<double>(ScalingTrack);
+    Vector2u CurrentSquare=Vector2u(MousePosition.x,MousePosition.y);
     if(ClickLeft==1 || ClickRight==1){
-        Vector2u CurrentSquare=getCurrentSquare();
-        Vector2u Dim=track->getDim();
+        Vector2u Dim=track.getDim();
         if (CurrentSquare.x<Dim.x && CurrentSquare.y<Dim.y)
         {
-            Tile *CurrentTile=track->getTile(CurrentSquare.x,CurrentSquare.y);
+            Tile *CurrentTile=track.getTile(CurrentSquare.x,CurrentSquare.y);
             if(CurrentTile->isSquare==1)
             {
                 if(ClickLeft==1)
@@ -229,7 +225,7 @@ void Editor::Update(double DeltaTime){
                 }
             }
             else{
-                bool half=getTriangleHalf(CurrentSquare,CurrentTile->Orientation);
+                bool half=getTriangleHalf(MousePosition,CurrentTile->Orientation);
                 if(half==0){
                     if(ClickLeft==1)
                     {
@@ -275,7 +271,7 @@ void Editor::Update(double DeltaTime){
 
     if(StartFlag==1)
     {
-        track->StartingPositions[PlayerSelection]=getCurrentSquare();
+        track.StartingPositions[PlayerSelection]=CurrentSquare;
         StartFlag=0;
     }
 
@@ -283,8 +279,8 @@ void Editor::Update(double DeltaTime){
     {
         if(SaveFlag==1)
         {
-            track->FlushTrack(Config.TrackNumber);
-            track->WriteTrack(Config.TrackNumber);
+            track.FlushTrack(EditOptions.TrackNumber);
+            track.WriteTrack(EditOptions.TrackNumber);
         }
         EditorActive=0;
     }
@@ -292,7 +288,7 @@ void Editor::Update(double DeltaTime){
 }
 
 void Editor::Render(){
-    Vector2u TrackDim=track->getDim();
+    Vector2u TrackDim=track.getDim();
     TrackTiles.resize((TrackDim.x*TrackDim.y)*6);
     OverLay.resize((TrackDim.x*TrackDim.y)*12);
     unsigned current=0;
@@ -301,29 +297,29 @@ void Editor::Render(){
         for (unsigned j=0; j< TrackDim.y;++j)
         {
             Vector2u Pos=Vector2u(i,j);
-            if(track->getTile(i,j)->isSquare==1)
+            if(track.getTile(i,j)->isSquare==1)
             {
                 sf::Vertex *tri = &TrackTiles[current * 3];
                 sf::Vertex *lines = &OverLay[current * 6];
-                Vector2u TextPos=Vector2u(0,track->getTile(i,j)->Types.x);
+                Vector2u TextPos=Vector2u(0,track.getTile(i,j)->Types.x);
                 PrepareandScaleTriangle(tri,lines,TextPos,Pos,0,1);
                 current++;
                 tri = &TrackTiles[current * 3];
                 lines = &OverLay[current * 6];
-                TextPos=Vector2u(0,track->getTile(i,j)->Types.x);
+                TextPos=Vector2u(0,track.getTile(i,j)->Types.x);
                 PrepareandScaleTriangle(tri,lines,TextPos,Pos,2,1);
                 current++;
             }
             else{
                 sf::Vertex *tri= &TrackTiles[current * 3];
                 sf::Vertex *lines = &OverLay[current * 6];
-                Vector2u TextPos=Vector2u(0,track->getTile(i,j)->Types.x);
-                PrepareandScaleTriangle(tri,lines,TextPos,Pos,track->getTile(i,j)->Orientation);
+                Vector2u TextPos=Vector2u(0,track.getTile(i,j)->Types.x);
+                PrepareandScaleTriangle(tri,lines,TextPos,Pos,track.getTile(i,j)->Orientation);
                 current++;
                 tri = &TrackTiles[current * 3];
                 lines = &OverLay[current * 6];
-                TextPos=Vector2u(0,track->getTile(i,j)->Types.y);
-                PrepareandScaleTriangle(tri,lines,TextPos,Pos,track->getTile(i,j)->Orientation+2);
+                TextPos=Vector2u(0,track.getTile(i,j)->Types.y);
+                PrepareandScaleTriangle(tri,lines,TextPos,Pos,track.getTile(i,j)->Orientation+2);
                 current++;
             }
         }
@@ -332,12 +328,11 @@ void Editor::Render(){
     {
         OverLay[i].color=sf::Color::Blue;
     }
-    unsigned Size=track->getSize();
-    for (unsigned i=0; i<track->TotalStarting; i++)
+    for (unsigned i=0; i<track.TotalStarting; i++)
     {
-        Vector2u Position=track->StartingPositions[i];
-        StartingCircles[i].setPosition(Vector2f(ScalingTrack*Size*Position.x+ScalingTrack*Size/2,
-                                                ScalingTrack*Size*Position.y+ScalingTrack*Size/2));
+        Vector2u Position=track.StartingPositions[i];
+        StartingCircles[i].setPosition(Vector2f(ScalingTrack*Position.x+ScalingTrack*0.5,
+                                                ScalingTrack*Position.y+ScalingTrack*0.5));
         if (PlayerSelection==i)
         {
             StartingCircles[i].setFillColor(sf::Color::Yellow);
@@ -346,10 +341,10 @@ void Editor::Render(){
         {
             StartingCircles[i].setFillColor(sf::Color::Green);
         }
-        StartingNumbers[i].setPosition(Vector2f(ScalingTrack*Size*Position.x+ScalingTrack*Size/2,
-                                                ScalingTrack*Size*Position.y+ScalingTrack*Size/2));
+        StartingNumbers[i].setPosition(Vector2f(ScalingTrack*Position.x+ScalingTrack*0.5,
+                                                ScalingTrack*Position.y+ScalingTrack*0.5));
     }
-    Window->draw(TrackTiles,track->getTexture());
+    Window->draw(TrackTiles,&TrackTexture);
 
     if(OverLayON==1)
     {
@@ -358,7 +353,7 @@ void Editor::Render(){
 
     for (unsigned i=0; i<8; i++)
     {
-        if (i<track->TotalStarting)
+        if (i<track.TotalStarting)
         {
             Window->draw(StartingCircles[i]);
             Window->draw(StartingNumbers[i]);
@@ -376,7 +371,7 @@ void Editor::Render(){
     {
         ClickableUnsigneds[i].Render(Window,TexturePointer);;
     }
-    ClickableSelection.Render(Window,track->getTexture());
+    ClickableSelection.Render(Window,&TrackTexture);
 
     if(PreExitFlag==1)
     {
@@ -389,17 +384,18 @@ void Editor::Render(){
 
 void Editor::PrepareandScaleTriangle(sf::Vertex *tri, sf::Vertex *lines ,
                                      Vector2u TextPos, Vector2u Pos, unsigned Orientation, bool isSquare){
-    unsigned Size=track->getSize();
     vector<sf::Vertex> quad(4);
-    quad[0].position=(float)ScalingTrack*Vector2f(Pos.x*Size, Pos.y*Size);
-    quad[1].position=(float)ScalingTrack*Vector2f(Pos.x*Size, (Pos.y+1)*Size);
-    quad[2].position=(float)ScalingTrack*Vector2f((Pos.x+1)*Size, (Pos.y+1)*Size);
-    quad[3].position=(float)ScalingTrack*Vector2f((Pos.x+1)*Size, Pos.y*Size);
+    float RenderScaling=ScalingTrack;
+    quad[0].position=RenderScaling*Vector2f(Pos.x, Pos.y);
+    quad[1].position=RenderScaling*Vector2f(Pos.x, Pos.y+1);
+    quad[2].position=RenderScaling*Vector2f(Pos.x+1, Pos.y+1);
+    quad[3].position=RenderScaling*Vector2f(Pos.x+1, Pos.y);
 
-    quad[0].texCoords=Vector2f(TextPos.x*Size, TextPos.y*Size);
-    quad[1].texCoords=Vector2f(TextPos.x*Size, (TextPos.y+1)*Size);
-    quad[2].texCoords=Vector2f((TextPos.x+1)*Size, (TextPos.y+1)*Size);
-    quad[3].texCoords=Vector2f((TextPos.x+1)*Size, TextPos.y*Size);
+    float TextureScaling=RenderSize;
+    quad[0].texCoords=TextureScaling*Vector2f(TextPos.x, TextPos.y);
+    quad[1].texCoords=TextureScaling*Vector2f(TextPos.x, TextPos.y+1);
+    quad[2].texCoords=TextureScaling*Vector2f(TextPos.x+1, TextPos.y+1);
+    quad[3].texCoords=TextureScaling*Vector2f(TextPos.x+1, TextPos.y);
 
     for (unsigned i=0; i<3; i++)
     {
@@ -423,33 +419,5 @@ void Editor::PrepareandScaleTriangle(sf::Vertex *tri, sf::Vertex *lines ,
 }
 
 
-Vector2u Editor::getCurrentSquare(){
-    Vector2i localPosition = sf::Mouse::getPosition(*Window);
-    unsigned Size=track->getSize();
-    unsigned x=localPosition.x/(ScalingTrack*Size);
-    unsigned y=localPosition.y/(ScalingTrack*Size);
-    return sf::Vector2u(x,y);
-}
 
 
-bool Editor::getTriangleHalf(Vector2u Position, bool Orientation){
-    Vector2i LocalPosition = sf::Mouse::getPosition(*Window);
-    Vector2d CorrectedPosition=Vector2d((double)(LocalPosition.x)/ScalingTrack,(double)(LocalPosition.y)/ScalingTrack);
-    double component;
-    unsigned Size=track->getSize();
-    if (Orientation==0){
-        Vector2d Position1=Vector2d(Size*Position.x,Size*(Position.y+1));
-        Vector2d Position2=Vector2d(Size*(Position.x+1),Size*Position.y);
-        Vector2d Position3=Vector2d(Size*Position.x,Size*Position.y);
-        Vector2d Normal=Position2-Position1;
-        component=DotProduct(CorrectedPosition-Position3,Normal);
-    }
-    else{
-        Vector2d Position1=Vector2d(Size*(Position.x+1),Size*(Position.y+1));
-        Vector2d Position2=Vector2d(Size*Position.x,Size*Position.y);
-        Vector2d Position3=Vector2d(Size*Position.x,Size*(Position.y+1));
-        Vector2d Normal=Position2-Position1;
-        component=DotProduct(CorrectedPosition-Position3,Normal);
-    }
-    return (component>0);
-}

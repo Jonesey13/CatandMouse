@@ -1,40 +1,43 @@
-#include "header.h"
+#include "car.h"
 
-Car::Car(){
-    DrivingForce=200;
-    Braking=50;
-    Reversing=20;
-    Velocity=Vector2d();
-    Rotation=0;
-    Position=Vector2d();
-    TurningRate=0.5;
-    VelocitySwitch=false;
-    BrakeSwitch=false;
-    RPlusSwitch=false;
-    RMinusSwitch=false;
+
+
+void Car::NormalTraction(){
+    RollingFriction=1;
+    SlidingFriction=5;
+    Traction=0.5;
 }
 
-sf::Texture Car::Texture=sf::Texture();
-unsigned Car::Size=0;
-
-void Car::init(){
-    Texture.loadFromFile("CarSprites.png");
-    Size=32;
+void Car::SlidingTraction(){
+    RollingFriction=0.2;
+    SlidingFriction=1;
+    Traction=0.1;
 }
 
-
-sf::Texture *Car::getTexture(){
-    return &Texture;
-}
-
-unsigned Car::getSize(){
-    return Size;
-}
 
 void Car::Update(double DeltaTime){
     Vector2d RollingDirection=RotateVector(Vector2d(1,0), Rotation);
-    //sf::Vector2f SlidingDirection=RotateVector(sf::Vector2f(0,1), Rotation);
+    Vector2d SlidingDirection=RotateVector(Vector2d(0,1), Rotation);
+    double Rolling=DotProduct(Velocity,RollingDirection);
+    double Sliding=DotProduct(Velocity,SlidingDirection);
+    Rolling=Rolling-RollingFriction*Rolling*DeltaTime;
+    if (abs(Sliding)>abs(SlidingFriction*DeltaTime))
+    {
+    Sliding=Sliding-SlidingFriction*copysign(1,Sliding)*DeltaTime;
+    }
+    else{
+        Sliding=0;
+    }
+    Velocity=Rolling*RollingDirection+Sliding*SlidingDirection;
 
+    if (abs(Angular)>abs(AngularFriction*DeltaTime))
+    {
+        Angular=Angular-AngularFriction*Angular*DeltaTime;
+    }
+    else{
+        Angular=0;
+    }
+    Rotation=Rotation+Angular*DeltaTime;
     Position=Position+Velocity*DeltaTime;
 
     // Update variables according to button presses
@@ -44,7 +47,7 @@ void Car::Update(double DeltaTime){
     }
     if (BrakeSwitch==1)
     {
-        double Rolling=DotProduct(Velocity,RollingDirection);
+        Rolling=DotProduct(Velocity,RollingDirection);
         Velocity=Velocity-Rolling*RollingDirection;
         if (Rolling>=0)
         {
@@ -56,6 +59,8 @@ void Car::Update(double DeltaTime){
         }
         Velocity=Velocity+Rolling*RollingDirection;
     }
+    Rolling=DotProduct(Velocity,RollingDirection);
+    Vector2d OldRolling=Rolling*RollingDirection;
     if (RMinusSwitch==1)
     {
         Rotation=Rotation-TurningRate*DeltaTime;
@@ -64,5 +69,35 @@ void Car::Update(double DeltaTime){
     {
         Rotation=Rotation+TurningRate*DeltaTime;
     }
+
+    RollingDirection=RotateVector(Vector2d(1,0), Rotation);
+    Vector2d NewRolling=Rolling*RollingDirection;
+    Vector2d RollingDifference=NewRolling-OldRolling;
+    double RollingChange=sqrt(DotProduct(RollingDifference,RollingDifference))/DeltaTime;
+    if (RollingChange<Traction)
+    {
+        Velocity=Velocity-OldRolling;
+        Velocity=Velocity+NewRolling;
+    }
+    else
+    {
+        Velocity=Velocity-Traction/RollingChange*OldRolling;
+        Velocity=Velocity+Traction/RollingChange*NewRolling;
+    }
+
 }
+
+void Car::DeathUpdate(double DeltaTime){
+//    Velocity=Velocity/sqrt(DotProduct(Velocity,Velocity));
+    Position+=DeltaTime*Velocity;
+    DeathTime+=DeltaTime;
+    if(DeathTime>DeathDuration)
+    {
+        DeathSwitch=0;
+        DeathTime=0;
+        RequestReset=1;
+    }
+}
+
+
 

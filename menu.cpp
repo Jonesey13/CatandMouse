@@ -1,4 +1,4 @@
-#include "header.h"
+#include "menu.h"
 
 
 Menu::Menu(sf::RenderWindow &NewWindow)
@@ -6,182 +6,90 @@ Menu::Menu(sf::RenderWindow &NewWindow)
     Window=&NewWindow;
     font.loadFromFile("Aller.ttf");
 
-    Vector2u Resolution=Window->getSize();
+    Resolution=Window->getSize();
     TextSize=Resolution.y/(12.f);
 
-    ostringstream convert;
+    MenuTitles.push_back("Cat & Mouse");
+    MenuTitles.push_back("Track Editor");
+    MenuTitles.push_back("Track Editor");
+    MenuTitles.push_back("Options");
+    MenuTitles.push_back("Controller Settings");
 
     vector<MenuItem> ItemVector;
-    TextBlock.push_back(ItemVector);
-    TextBlock.push_back(ItemVector);
-    TextBlock.push_back(ItemVector);
-
-    MenuItem text;
-    text.setFont(font); // font is a sf::Font
-    text.setString("Cat & Mouse");
-    text.setCharacterSize(TextSize);
-    text.setColor(sf::Color::Red);
-    sf::FloatRect textRect = text.getLocalBounds();
-    text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-    text.setPosition(sf::Vector2f(Resolution.x/2,2*TextSize));
-    text.SelectionIndex=-1;
-    TextBlock[0].push_back(text);
+    for (unsigned i=0; i<10; i++)
+    {
+        Items.push_back(ItemVector);
+    }
+    MenuItem Item=MenuItem("Start",ActionStartGame);
+    Items[0].push_back(Item);
 
 
+    Item=MenuItem("Track Number",Config.TrackNumber,1,100,NoAction);
+    Items[0].push_back(Item);
 
-    text.setString("Track Editor");
-    text.setCharacterSize(TextSize);
-    text.setColor(sf::Color::Red);
-    textRect = text.getLocalBounds();
-    text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-    text.setPosition(sf::Vector2f(Resolution.x/2,2*TextSize));
-    text.SelectionIndex=-1;
-    TextBlock[1].push_back(text);
-    TextBlock[2].push_back(text);
+    Item=MenuItem("Number Of Players",Config.NumberOfPlayers,1,8,NoAction);
+    Items[0].push_back(Item);
 
+    Item=MenuItem("Options",ActionOptionsMenu);
+    Items[0].push_back(Item);
 
+    Item=MenuItem("Track Editor",ActionEditorMenu1);
+    Items[0].push_back(Item);
 
-    text.setString("Start");
-    textRect = text.getLocalBounds();
-    text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-    text.setPosition(sf::Vector2f(Resolution.x/2,5*TextSize));
-    text.SelectionIndex=0;
-    TextBlock[0].push_back(text);
+    Item=MenuItem("Track Number",Config.TrackNumber,NoAction);
+    Items[1].push_back(Item);
 
+    Item=MenuItem("Use Existing Track","No Track Recorded",ActionEditorRunCurrent);
+    Items[1].push_back(Item);
 
+    Item=MenuItem("Start A New Track",ActionEditorMenu2);
+    Items[1].push_back(Item);
 
-    convert<<"Track Number:"<<Config.TrackNumber;
-    text.setString(convert.str());
-    textRect = text.getLocalBounds();
-    text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-    text.setPosition(sf::Vector2f(Resolution.x/2,6*TextSize));
-    text.SelectionIndex=1;
-    TextBlock[0].push_back(text);
+    Item=MenuItem("Return",ActionReturn);
+    Items[1].push_back(Item);
 
-    convert.str("");
-    convert<<"Number Of Players:"<<Config.NumberOfPlayers;
-    text.setString(convert.str());
-    textRect = text.getLocalBounds();
-    text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-    text.setPosition(sf::Vector2f(Resolution.x/2,7*TextSize));
-    text.SelectionIndex=2;
-    TextBlock[0].push_back(text);
+    Item=MenuItem("Set Track Width",EditOptions.NewTrackDim.x,1,100,NoAction);
+    Items[2].push_back(Item);
 
-    convert.str("");
-    convert<<"Configure Joysticks";
-    text.setString(convert.str());
-    textRect = text.getLocalBounds();
-    text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-    text.setPosition(sf::Vector2f(Resolution.x/2,8*TextSize));
-    text.SelectionIndex=3;
-    TextBlock[0].push_back(text);
+    Item=MenuItem("Set Track Height",EditOptions.NewTrackDim.y,1,100,NoAction);
+    Items[2].push_back(Item);
 
+    Item=MenuItem("Begin",ActionEditorRunNew);
+    Items[2].push_back(Item);
 
-    convert.str("");
-    convert<<"Press a Button On Joystick "<<CurrentJoy+1;
-    text.setString(convert.str());
-    textRect = text.getLocalBounds();
-    text.setColor(sf::Color::Yellow);
-    text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-    text.setPosition(sf::Vector2f(Resolution.x/2,9*TextSize));
-    text.SelectionIndex=3;
-    text.flag=1;
-    TextBlock[0].push_back(text);
-    text.flag=0;
+    Item=MenuItem("Return",ActionReturn);
+    Items[2].push_back(Item);
 
-    text.setString("Track Editor Mode");
-    textRect = text.getLocalBounds();
-    text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-    text.setPosition(sf::Vector2f(Resolution.x/2,10*TextSize));
-    text.SelectionIndex=4;
-    TextBlock[0].push_back(text);
+    Item=MenuItem("Number of Laps",Config.NumberOfLaps,NoAction);
+    Items[3].push_back(Item);
 
-    convert.str("");
-    convert<<"Track Number:"<<Config.TrackNumber;
-    text.setString(convert.str());
-    textRect = text.getLocalBounds();
-    text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-    text.setPosition(sf::Vector2f(Resolution.x/2,5*TextSize));
-    text.SelectionIndex=0;
-    TextBlock[1].push_back(text);
+    Item=MenuItem("Configure Controllers",ActionControllerMenu);
+    Items[3].push_back(Item);
 
-    convert.str("");
-    convert<<"Use Existing Track";
-    text.setString(convert.str());
-    textRect = text.getLocalBounds();
-    text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-    text.setPosition(sf::Vector2f(Resolution.x/2,7*TextSize));
-    text.SelectionIndex=1;
-    TextBlock[1].push_back(text);
+    Item=MenuItem("Save Settings","Done",ActionSaveOptions);
+    Items[3].push_back(Item);
 
-    convert.str("");
-    convert<<"No Track Recorded";
-    text.setString(convert.str());
-    textRect = text.getLocalBounds();
-    text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-    text.setPosition(sf::Vector2f(Resolution.x/2,8*TextSize));
-    text.SelectionIndex=1;
-    text.flag=1;
-    TextBlock[1].push_back(text);
-    text.flag=0;
+    Item=MenuItem("Load Settings","Done",ActionLoadOptions);
+    Items[3].push_back(Item);
 
+    Item=MenuItem("Return",ActionReturn);
+    Items[3].push_back(Item);
 
-    convert.str("");
-    convert<<"Start a New Track";
-    text.setString(convert.str());
-    textRect = text.getLocalBounds();
-    text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-    text.setPosition(sf::Vector2f(Resolution.x/2,9*TextSize));
-    text.SelectionIndex=2;
-    TextBlock[1].push_back(text);
+    Item=MenuItem("Player Number",CurrentPlayer,1,8,NoAction);
+    Items[4].push_back(Item);
 
-    convert.str("");
-    convert<<"Return";
-    text.setString(convert.str());
-    textRect = text.getLocalBounds();
-    text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-    text.setPosition(sf::Vector2f(Resolution.x/2,10*TextSize));
-    text.SelectionIndex=3;
-    TextBlock[1].push_back(text);
+    Item=MenuItem("Choose Joystick For Player","Press Any Button For Player",CurrentPlayer,ActionJoyConfig);
+    Items[4].push_back(Item);
 
+    Item=MenuItem("Choose Accelerate Button","Press Button Now",ActionAccelerateSet);
+    Items[4].push_back(Item);
 
-    convert.str("");
-    convert<<"Track Width:"<<Config.NewTrackDim.x;
-    text.setString(convert.str());
-    textRect = text.getLocalBounds();
-    text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-    text.setPosition(sf::Vector2f(Resolution.x/2,5*TextSize));
-    text.SelectionIndex=0;
-    TextBlock[2].push_back(text);
+    Item=MenuItem("Choose Brake Button","Press Button Now",ActionBrakeSet);
+    Items[4].push_back(Item);
 
-    convert.str("");
-    convert<<"Track Height:"<<Config.NewTrackDim.y;
-    text.setString(convert.str());
-    textRect = text.getLocalBounds();
-    text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-    text.setPosition(sf::Vector2f(Resolution.x/2,6*TextSize));
-    text.SelectionIndex=1;
-    TextBlock[2].push_back(text);
+    Item=MenuItem("Return to Options",ActionOptionsMenu);
+    Items[4].push_back(Item);
 
-
-    convert.str("");
-    convert<<"Begin";
-    text.setString(convert.str());
-    textRect = text.getLocalBounds();
-    text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-    text.setPosition(sf::Vector2f(Resolution.x/2,7*TextSize));
-    text.SelectionIndex=2;
-    TextBlock[2].push_back(text);
-
-
-    convert.str("");
-    convert<<"Return";
-    text.setString(convert.str());
-    textRect = text.getLocalBounds();
-    text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-    text.setPosition(sf::Vector2f(Resolution.x/2,8*TextSize));
-    text.SelectionIndex=3;
-    TextBlock[2].push_back(text);
 }
 
 
@@ -211,18 +119,24 @@ void Menu::ProcessEvents(sf::Event &Event){
                 break;
             case sf::Keyboard::Down:
                 {
-                if (Selection < TextBlock[Choice].size())
-                {
-                    ++Selection;
-                }
+                if (Selection < Items[Choice].size()-1)
+                    {
+                        Items[Choice][Selection].Flag=0;
+                        ClearVariables();
+                        ++Selection;
+                        Selected=0;
+                    }
                 }
                 break;
             case sf::Keyboard::Up:
                 {
                 if (Selection > 0)
-                {
-                    --Selection;
-                }
+                    {
+                        Items[Choice][Selection].Flag=0;
+                        ClearVariables();
+                        --Selection;
+                        Selected=0;
+                    }
                 }
                 break;
             case sf::Keyboard::Left:
@@ -236,26 +150,64 @@ void Menu::ProcessEvents(sf::Event &Event){
                 }
                 break;
             default:
-            break;
+                break;
             }
+            break;
         case sf::Event::JoystickButtonPressed:
         {
-        unsigned ActiveJoy=Event.joystickButton.joystickId;
-        if (JoyConfig==1 && none_of(RegJoy.begin(),RegJoy.end(),
-                                      [&](unsigned k){return k==ActiveJoy;}))
-        {
-            Config.JoyId[ActiveJoy]=CurrentJoy;
-            RegJoy.push_back(ActiveJoy);
-            if(CurrentJoy+1<Config.NumberOfPlayers)
+            unsigned ActiveJoy=Event.joystickButton.joystickId;
+            if (JoyConfig==1)
             {
-               ++CurrentJoy;
-            }
-            else{
+                for( unsigned index=0; index<Config.JoyId.size();index++)
+                {
+                    if (Config.JoyId[index]==static_cast<int>(CurrentPlayer-1))
+                    {
+                        Config.JoyId[index]=-1;
+                    }
+                }
+                Config.JoyId[ActiveJoy]=CurrentPlayer-1;
+                cout<<ActiveJoy<<endl;
+                cout<<CurrentPlayer<<endl<<endl;
+                for( unsigned index=0; index<Config.JoyId.size();index++)
+                {
+                    cout<<Config.JoyId[index]<<endl;
+                }
+                cout<<endl;
                 JoyConfig=0;
+                Items[Choice][Selection].Flag=0;
+            }
+            if(Config.JoyId[ActiveJoy]==static_cast<int>(CurrentPlayer-1) )
+            {
+                unsigned CurrentButton=Event.joystickButton.button;
+                if (ButtonConfig==1 && CurrentAction==ACCELERATE)
+                {
+                    for (auto index: Config.ButtonsToActions[CurrentPlayer-1])
+                    {
+                        if (index.second==ACCELERATE){
+                            Config.ButtonsToActions[CurrentPlayer-1].erase(index.first);
+                            break;
+                        }
+                    }
+                    Config.ButtonsToActions[CurrentPlayer-1][CurrentButton]=ACCELERATE;
+                    ButtonConfig=0;
+                    Items[Choice][Selection].Flag=0;
+                }
+                if (ButtonConfig==1 && CurrentAction==BRAKE)
+                {
+                    for (auto index: Config.ButtonsToActions[CurrentPlayer-1])
+                    {
+                        if (index.second==BRAKE){
+                            Config.ButtonsToActions[CurrentPlayer-1].erase(index.first);
+                            break;
+                        }
+                    }
+                    Config.ButtonsToActions[CurrentPlayer-1][CurrentButton]=BRAKE;
+                    ButtonConfig=0;
+                    Items[Choice][Selection].Flag=0;
+                }
             }
         }
-        break;
-        }
+            break;
         default:
             break;
         }
@@ -264,18 +216,62 @@ void Menu::ProcessEvents(sf::Event &Event){
 
 
 void Menu::Render(){
-    for (unsigned i=0; i< TextBlock[Choice].size(); i++)
+    sf::Text text;
+    text.setFont(font);
+    text.setCharacterSize(TextSize);
+    unsigned FlagShift=0;
+    text.setString(MenuTitles[Choice]);
+    text.setColor(sf::Color::Red);
+    sf::FloatRect textRect = text.getLocalBounds();
+    text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
+    text.setPosition(sf::Vector2f(Resolution.x/2,1*TextSize));
+    Window->draw(text);
+
+
+
+    for (unsigned i=0; i< Items[Choice].size(); i++)
     {
-        if (Selection==TextBlock[Choice][i].SelectionIndex)
+        if(Items[Choice][i].HasNumber==1)
         {
-            TextBlock[Choice][i].setColor(sf::Color::Yellow);
+            ostringstream convert;
+            convert<<Items[Choice][i].Item<<": "<<*Items[Choice][i].NumberPointer;
+            text.setString(convert.str());
+        }
+        else
+        {
+            text.setString(Items[Choice][i].Item);
+        }
+        if (Selection==i)
+        {
+            text.setColor(sf::Color::Yellow);
         }
         else{
-            TextBlock[Choice][i].setColor(sf::Color::Red);
+            text.setColor(sf::Color::Red);
         }
-        if(TextBlock[Choice][i].flag==0 || JoyConfig==1 || FlagOn==1)
+        textRect = text.getLocalBounds();
+        text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
+        text.setPosition(sf::Vector2f(Resolution.x/2,(4+i+FlagShift)*TextSize));
+        Window->draw(text);
+        if (Items[Choice][i].HasFlag==1)
         {
-        Window->draw(TextBlock[Choice][i]);
+            FlagShift++;
+            if(Items[Choice][i].HasFlagNumber==1)
+            {
+                ostringstream convert;
+                convert<<Items[Choice][i].FlagMessage<<": "<<*Items[Choice][i].FlagPointer;
+                text.setString(convert.str());
+            }
+            else{
+                text.setString(Items[Choice][i].FlagMessage);
+            }
+            text.setColor(sf::Color::Yellow);
+            textRect = text.getLocalBounds();
+            text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
+            text.setPosition(sf::Vector2f(Resolution.x/2,(4+i+FlagShift)*TextSize));
+            if (Items[Choice][i].Flag==1)
+            {
+             Window->draw(text);
+            }
         }
     }
     Window->display();
@@ -284,123 +280,95 @@ void Menu::Render(){
 
 
 void Menu::Update(){
-    if(Choice==0)
+    if (Selected==1)
     {
-        if(Selection==0 && Selected==1)
-        {
-            StartGame=1;
-        }
-
-        if(Selection==1)
-        {
-            Config.TrackNumber=Config.TrackNumber+Change;
-            ostringstream convert;
-            convert<<"Track Number:"<<Config.TrackNumber;
-            TextBlock[0][2].setString(convert.str());
-            Change=0;
-        }
-
-        if(Selection==2)
-        {
-            Config.NumberOfPlayers=Config.NumberOfPlayers+Change;
-            ostringstream convert;
-            convert<<"Number Of Players:"<<Config.NumberOfPlayers;
-            TextBlock[0][3].setString(convert.str());
-            Change=0;
-        }
-
-        if(Selection==3)
-        {
-            if(Selected==1)
-            {
-                JoyConfig=1;
-            }
-            if(JoyConfig==1)
-            {
-                ostringstream convert;
-                convert.str("");
-                convert<<"Press a Button On Joystick "<<CurrentJoy+1;
-                TextBlock[0][5].setString(convert.str());
-            }
-        }
-        if(Selection==4 && Selected==1)
-        {
-            Choice=1;
-            Selection=0;
-        }
+        (this->*Items[Choice][Selection].ActionFunction)();
+        Selected=0;
     }
-    if(Choice==1)
+    if (Items[Choice][Selection].HasNumber==1)
     {
-        if(Selection==0)
-        {
-            Config.TrackNumber=Config.TrackNumber+Change;
-            ostringstream convert;
-            convert<<"Track Number:"<<Config.TrackNumber;
-            TextBlock[1][1].setString(convert.str());
-            Change=0;
-            FlagOn=0;
-        }
-        if(Selection==1 && Selected==1)
-        {
-            Track RaceTrack;
-            RaceTrack.ReadTrack(Config.TrackNumber);
-            if (RaceTrack.TrackReady==1)
-            {
-                StartEditor=1;
-            }
-            else
-            {
-                FlagOn=1;
-            }
-
-        }
-        if(Selection==2 && Selected==1)
-        {
-            Choice=2;
-            Selection=0;
-            FlagOn=0;
-        }
-        if(Selection==3 && Selected==1)
-        {
-            Choice=0;
-            Selection=0;
-            FlagOn=0;
-        }
+        MenuItem Current=Items[Choice][Selection];
+        if( *Current.NumberPointer+Change>=Current.Minimum &&  *Current.NumberPointer+Change<=Current.Maximum)
+            *Current.NumberPointer+=Change;
     }
-    if(Choice==2)
+    Change=0;
+}
+
+
+void Menu::ActionStartGame(){
+    StartGame=1;
+}
+
+void Menu::ActionReturn(){
+    Choice=0;
+    Selection=0;
+}
+
+void Menu::ActionEditorMenu1(){
+    Choice=1;
+    Selection=0;
+}
+
+void Menu::ActionEditorMenu2(){
+    Choice=2;
+    Selection=0;
+}
+
+void Menu::ActionOptionsMenu(){
+    Choice=3;
+    Selection=0;
+}
+
+void Menu::ActionControllerMenu(){
+    Choice=4;
+    Selection=0;
+}
+
+void Menu::ActionSaveOptions(){
+    Config.Save();
+    Items[Choice][Selection].Flag=1;
+}
+
+void Menu::ActionLoadOptions(){
+    Config.Load();
+    Items[Choice][Selection].Flag=1;
+}
+
+void Menu::ActionAccelerateSet(){
+    ButtonConfig=1;
+    CurrentAction=ACCELERATE;
+    Items[Choice][Selection].Flag=1;
+}
+
+void Menu::ActionBrakeSet(){
+    ButtonConfig=1;
+    CurrentAction=BRAKE;
+    Items[Choice][Selection].Flag=1;
+}
+
+
+void Menu::ActionJoyConfig(){
+    JoyConfig=1;
+    Items[Choice][Selection].Flag=1;
+}
+
+void Menu::ActionEditorRunCurrent(){
+    Track RaceTrack;
+    RaceTrack.ReadTrack(Config.TrackNumber);
+    if (RaceTrack.TrackReady==1)
     {
-        if(Selection==0)
-        {
-            Config.NewTrackDim.x=Config.NewTrackDim.x+Change;
-            ostringstream convert;
-            convert<<"Track Width:"<<Config.NewTrackDim.x;
-            TextBlock[2][1].setString(convert.str());
-            Change=0;
-        }
-        if(Selection==1)
-        {
-            Config.NewTrackDim.y=Config.NewTrackDim.y+Change;
-            ostringstream convert;
-            convert<<"Track Height:"<<Config.NewTrackDim.y;
-            TextBlock[2][2].setString(convert.str());
-            Change=0;
-        }
-        if(Selection==2 && Selected==1)
-        {
-            Track RaceTrack;
-            RaceTrack.FlushTrack(Config.TrackNumber);
-            RaceTrack.SetBlank(Config.NewTrackDim);
-            RaceTrack.WriteTrack(Config.TrackNumber);
-            StartEditor=1;
-        }
-        if(Selection==3 && Selected==1)
-        {
-            Choice=0;
-            Selection=0;
-            FlagOn=0;
-        }
+        StartEditor=1;
+        EditOptions.BlankTrack=0;
+        EditOptions.TrackNumber=Config.TrackNumber;
     }
+    else
+    {
+        Items[Choice][Selection].Flag=1;
+    }
+}
 
-
-    Selected=0;
+void Menu::ActionEditorRunNew(){
+    EditOptions.BlankTrack=1;
+    EditOptions.TrackNumber=Config.TrackNumber;
+    StartEditor=1;
 }

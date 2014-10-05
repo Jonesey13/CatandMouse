@@ -1,4 +1,7 @@
-#include "header.h"
+#include "game.h"
+#include "track.h"
+#include "editor.h"
+#include "menu.h"
 
 Vector2i Resolution=Vector2i(800,600);
 double CyclesPerSecond=100;
@@ -6,34 +9,30 @@ double CycleTime=1/CyclesPerSecond;
 double FramesPerSecond=60;
 double FrameTime=1/FramesPerSecond;
 sf::Clock GameClock;
-unsigned cycleaccumulator=0;
-unsigned frameaccumulator=0;
+unsigned cycles=0;
+unsigned frames=0;
 
 int main()
 {
-    //timeBeginPeriod(1);
     sf::RenderWindow Window(sf::VideoMode(Resolution.x, Resolution.y), "Cat & Mouse");
-    Track RaceTrack;
-    Car::init();
     sf::Event Event;
     Menu menu(Window);
     Game game;
     Editor editor;
     while (Window.isOpen())
     {
-
         if (game.GameActive==1)
         {
             game.ProcessEvents(Event);
-            if (game.getTime()-cycleaccumulator*CycleTime>CycleTime)
+            if (game.getTime()-cycles*CycleTime>CycleTime)
             {
                 game.Update(CycleTime);
-                cycleaccumulator++;
+                cycles++;
             }
-            if (game.getTime()-frameaccumulator*FrameTime>FrameTime)
+            if (game.getTime()-frames*FrameTime>FrameTime)
             {
                 game.Render();
-                frameaccumulator++;
+                frames++;
             }
         }
 
@@ -41,15 +40,15 @@ int main()
         {
             sf::sleep(sf::milliseconds(1));
             editor.ProcessEvents(Event);
-            if (editor.getTime()-cycleaccumulator*CycleTime>CycleTime)
+            if (editor.getTime()-cycles*CycleTime>CycleTime)
             {
                 editor.Update(CycleTime);
-                cycleaccumulator++;
+                cycles++;
             }
-            if (editor.getTime()-frameaccumulator*FrameTime>FrameTime)
+            if (editor.getTime()-frames*FrameTime>FrameTime)
             {
                 editor.Render();
-                frameaccumulator++;
+                frames++;
             }
         }
 
@@ -61,24 +60,18 @@ int main()
             menu.Render();
             if (menu.StartGame==1)
             {
-                RaceTrack.init(menu.Config.TrackNumber);
-                game.init(menu.Config,RaceTrack,Window);
-                cycleaccumulator=0;
-                frameaccumulator=0;
+                game=Game();
+                game.init(menu.Config,Window,cycles,frames);
                 menu.StartGame=0;
             }
             if (menu.StartEditor==1)
             {
-                RaceTrack.init(menu.Config.TrackNumber);
-                editor= Editor();
-                editor.init(menu.Config,RaceTrack,Window);
-                cycleaccumulator=0;
-                frameaccumulator=0;
+                editor=Editor();
+                editor.init(menu.EditOptions,Window,cycles,frames);
                 menu.StartEditor=0;
             }
         }
 
     }
-    //timeEndPeriod(1);
     return 0;
 }
