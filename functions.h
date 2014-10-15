@@ -22,8 +22,8 @@ using Vector2f=sf::Vector2f;
 Vector2d RotateVector(Vector2d input, double rotation);
 double DotProduct(Vector2d vector1, Vector2d vector2);
 Vector2f Double2Float(Vector2d input);
-Vector2d ScalePosition(Vector2d position, double Scaling, bool paddingdim, unsigned padding);
-Vector2f ScalePosition(Vector2f position, double Scaling, bool paddingdim, unsigned padding);
+
+
 bool InPolygon(vector<Vector2d> Polygon1, vector<Vector2d> Polygon2,
                bool &CornerPoly, Vector2u &CornerSide, Vector2d &Direction, double &Overlap, bool &DoubleFlag);
 bool InPolygon(vector<Vector2d> Polygon1, vector<Vector2d> Polygon2);

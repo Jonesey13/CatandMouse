@@ -12,18 +12,6 @@ void Editor::init(EditorOptions &NewEditOptions, sf::RenderWindow &NewWindow,uns
     cycleptr=&cycles;
     *cycleptr=0;
 
-    ClickLeft=0;
-    ClickRight=0;
-    ExitFlag=0;
-    PreExitFlag=0;
-    SaveFlag=0;
-    StartFlag=0;
-    PaintSelection=0;
-    PlayerSelection=0;
-    OverLayON=1;
-
-
-
     EditOptions=NewEditOptions;
 
     if (EditOptions.BlankTrack==1)
@@ -44,18 +32,14 @@ void Editor::init(EditorOptions &NewEditOptions, sf::RenderWindow &NewWindow,uns
     ScalingTrack=0.85*Scaling;
     ScalingTools=0.15*Scaling;
 
-    ToolBoxes.setPrimitiveType(sf::Quads);
-    ToolBoxes.resize(8);
-    ToolBoxes[0].position=Vector2f(0.85*Resolution.x,0);
-    ToolBoxes[1].position=Vector2f(0.85*Resolution.x,Resolution.y);
-    ToolBoxes[2].position=Vector2f(Resolution.x,Resolution.y);
-    ToolBoxes[3].position=Vector2f(Resolution.x,0);
-    ToolBoxes[4].position=Vector2f(0,0.85*Resolution.y);
-    ToolBoxes[5].position=Vector2f(0,Resolution.y);
-    ToolBoxes[6].position=Vector2f(Resolution.x,Resolution.y);
-    ToolBoxes[7].position=Vector2f(Resolution.x,0.85*Resolution.y);
-    for (unsigned i=0; i <ToolBoxes.getVertexCount();i++)
-        ToolBoxes[i].color=sf::Color(80,80,80);
+    sf::RectangleShape Rectangle=CreateRectangle(Vector2d(0.15*Resolution.x,Resolution.y),sf::Color(80,80,80)
+                                                , Vector2d (0.85*Resolution.x+0.5*0.15*Resolution.x,0.5*Resolution.y));
+    ToolBoxes.push_back(Rectangle);
+    Rectangle=CreateRectangle(Vector2d(Resolution.x,0.15*Resolution.y),sf::Color(80,80,80)
+                                                , Vector2d (0.5*Resolution.x,0.85*Resolution.y+0.5*0.15*Resolution.y));
+    ToolBoxes.push_back(Rectangle);
+
+
 
     bool *BoolPointer=&OverLayON;
     Clickable<bool> OverLayButton=Clickable<bool>(BoolPointer,vector<Vector2i>{Vector2i(0,1),Vector2i(0,0)},0.05*Resolution.x
@@ -84,23 +68,16 @@ void Editor::init(EditorOptions &NewEditOptions, sf::RenderWindow &NewWindow,uns
     ClickableSelection=Clickable<unsigned>(UnsignedPointer,textpos,0.05*Resolution.x, Vector2f(0.1*Resolution.x, 0.9*Resolution.y)
                                            ,vector<string>{"Paint Selection"},0.02*Resolution.x);
 
-    sf::CircleShape Circle=sf::CircleShape(50);
-    sf::Text text=sf::Text();
-    StartingNumbers.clear();
-    StartingCircles.clear();
+
     for (unsigned i=0; i<8 ; ++i)
     {
+        sf::CircleShape Circle=CreateCircle(0.3*Scaling,sf::Color::Green,Vector2d(0,0));
         StartingCircles.push_back(Circle);
-        StartingCircles[i]=sf::CircleShape(50);
-        StartingCircles[i].setRadius(Scaling*0.3);
-        StartingCircles[i].setFillColor(sf::Color::Green);
-        sf::FloatRect  CircleRect = StartingCircles[i].getLocalBounds();
-        StartingCircles[i].setOrigin(CircleRect.left + CircleRect.width/2.0f,CircleRect.top  + CircleRect.height/2.0f);
 
-        StartingNumbers.push_back(text);
         ostringstream convert;
         convert<<i+1;
-        AdjustText(StartingNumbers[i],convert.str(),&font,0.5*Scaling,sf::Color::Red);
+        sf::Text text=CreateText(convert.str(),&font,0.5*Scaling,sf::Color::Red,Vector2d(0,0));
+        StartingNumbers.push_back(text);
     }
     Clock.restart();
 
@@ -133,7 +110,6 @@ void Editor::ProcessEvents(sf::Event &Event){
                 }
             }
             break;
-        // Keyboard Input (1 Player Only)
         case sf::Event::KeyPressed:
             switch (Event.key.code)
             {
@@ -360,7 +336,10 @@ void Editor::Render(){
         }
     }
 
-    Window->draw(ToolBoxes);
+    for(auto index : ToolBoxes)
+    {
+        Window->draw(index);
+    }
     sf::Texture *TexturePointer=&ButtonTexture;
 
     for (unsigned i=0; i<ClickableBools.size();i++)

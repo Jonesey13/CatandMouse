@@ -11,7 +11,7 @@ public:
     constexpr static double Wall_Elasticity=0.6;
     constexpr static double Elasticity=1;
     constexpr static double AngularElasticity=0.5;
-    constexpr static double DeathDuration=2;
+    constexpr static double DeathDuration=1;
     vector<Vector2d> Bounding={Vector2d(-0.375,-0.25),Vector2d(-0.375,0.25),Vector2d(0.375,0.25), Vector2d(0.375,-0.25)};
     double DrivingForce=10;
     double Braking=5;

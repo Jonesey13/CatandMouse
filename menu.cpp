@@ -166,13 +166,6 @@ void Menu::ProcessEvents(sf::Event &Event){
                     }
                 }
                 Config.JoyId[ActiveJoy]=CurrentPlayer-1;
-                cout<<ActiveJoy<<endl;
-                cout<<CurrentPlayer<<endl<<endl;
-                for( unsigned index=0; index<Config.JoyId.size();index++)
-                {
-                    cout<<Config.JoyId[index]<<endl;
-                }
-                cout<<endl;
                 JoyConfig=0;
                 Items[Choice][Selection].Flag=0;
             }
@@ -216,19 +209,8 @@ void Menu::ProcessEvents(sf::Event &Event){
 
 
 void Menu::Render(){
-    sf::Text text;
-    text.setFont(font);
-    text.setCharacterSize(TextSize);
-    unsigned FlagShift=0;
-    text.setString(MenuTitles[Choice]);
-    text.setColor(sf::Color::Red);
-    sf::FloatRect textRect = text.getLocalBounds();
-    text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-    text.setPosition(sf::Vector2f(Resolution.x/2,1*TextSize));
+    sf::Text text=CreateText(MenuTitles[Choice],&font ,TextSize, sf::Color::Red, Vector2d(Resolution.x/2,TextSize));
     Window->draw(text);
-
-
-
     for (unsigned i=0; i< Items[Choice].size(); i++)
     {
         if(Items[Choice][i].HasNumber==1)
@@ -248,13 +230,10 @@ void Menu::Render(){
         else{
             text.setColor(sf::Color::Red);
         }
-        textRect = text.getLocalBounds();
-        text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-        text.setPosition(sf::Vector2f(Resolution.x/2,(4+i+FlagShift)*TextSize));
+        RepositionText(text,Vector2d(Resolution.x/2,(4+i)*TextSize) );
         Window->draw(text);
         if (Items[Choice][i].HasFlag==1)
         {
-            FlagShift++;
             if(Items[Choice][i].HasFlagNumber==1)
             {
                 ostringstream convert;
@@ -265,9 +244,7 @@ void Menu::Render(){
                 text.setString(Items[Choice][i].FlagMessage);
             }
             text.setColor(sf::Color::Yellow);
-            textRect = text.getLocalBounds();
-            text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-            text.setPosition(sf::Vector2f(Resolution.x/2,(4+i+FlagShift)*TextSize));
+            RepositionText(text,Vector2d(Resolution.x/2,3*TextSize));
             if (Items[Choice][i].Flag==1)
             {
              Window->draw(text);

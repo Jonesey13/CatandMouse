@@ -15,10 +15,13 @@ using Vector2i=sf::Vector2i;
 using Vector2f=sf::Vector2f;
 using Vector2b=sf::Vector2<bool>;
 
+enum PROPERTIES {NORMAL_TRACTION,SLIDING_TRACTION,WALL,FALL,FINISH};
+typedef sf::Vector2<set<PROPERTIES>> Detect;
+
 class Tile
 {
 public:
-    sf::Vector2<set<string>> Detection=sf::Vector2<set<string>>(set<string>(),set<string>());
+    Detect Detection=sf::Vector2<set<PROPERTIES>>(set<PROPERTIES>(),set<PROPERTIES>());
     bool isSquare=1;
     bool Orientation=0;
     Vector2u Types=sf::Vector2u();

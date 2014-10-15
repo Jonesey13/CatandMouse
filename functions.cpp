@@ -22,29 +22,7 @@ Vector2f Double2Float(Vector2d input)
 }
 
 
-Vector2d ScalePosition(Vector2d position, double Scaling, bool paddingdim, unsigned padding){
-    position=Scaling*position;
-    if (paddingdim==0)
-    {
-        position =position+Vector2d(padding,0);
-    }
-    else{
-        position =position+Vector2d(0,padding);
-    }
-    return position;
-}
 
-Vector2f ScalePosition(Vector2f position, double Scaling, bool paddingdim, unsigned padding){
-    position=static_cast<float>(Scaling)*position;
-    if (paddingdim==0)
-    {
-        position =position+Vector2f(padding,0);
-    }
-    else{
-        position =position+Vector2f(0,padding);
-    }
-    return position;
-}
 
 bool InPolygon(Vector2d Point, vector<Vector2d> Polygon){
     vector<Vector2d> PointPoly={Point};

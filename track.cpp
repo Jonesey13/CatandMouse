@@ -23,13 +23,13 @@ Tile* Track::getTile(unsigned i, unsigned j){
 
 
 void Track::RefreshDetection(){
-    vector<set<string>> DetectionList;
+    vector<set<PROPERTIES>> DetectionList;
     DetectionList.resize(6);
-    DetectionList[0]={"FALL"};
-    DetectionList[1]={"NORMAL_TRACTION"};
-    DetectionList[2]={"WALL"};
-    DetectionList[3]={"SLIDING_TRACTION"};
-    DetectionList[4]={"NORMAL_TRACTION","FINISH"};
+    DetectionList[0]={FALL};
+    DetectionList[1]={NORMAL_TRACTION};
+    DetectionList[2]={WALL};
+    DetectionList[3]={SLIDING_TRACTION};
+    DetectionList[4]={NORMAL_TRACTION,FINISH};
     for (unsigned i=0;i<Dim.x;i++)
     {
         for (unsigned j=0;j<Dim.y;j++)
@@ -73,19 +73,19 @@ vector<Vector2d> Track::getTileBounding(unsigned i, unsigned j, bool TriangleHal
     return Bounding;
  }
 
-void Track::ReadTrack(unsigned TrackNumber){
+ void Track::ReadTrack(unsigned TrackNumber){
     string InputString;
-    vector<unsigned> InputInt(10);
-    ifstream Input("Tracks.txt",ios::binary);
+    unsigned InputInt;
+    ifstream InputStream("Tracks.txt",ios::binary);
     bool TrackFound=0;
-    while (TrackFound==0 && !Input.eof())
+    while (TrackFound==0 && !InputStream.eof())
     {
-        Input>>InputString;
-        if (InputString.compare("--StartTrack--")==0)
+        InputStream>>InputString;
+        if (InputString=="--StartTrack--")
         {
-            Input>>InputString;
-            Input>>InputInt[0];
-            if(InputInt[0]==TrackNumber)
+            InputStream>>InputString;
+            InputStream>>InputInt;
+            if(InputInt==TrackNumber)
             {
                 TrackFound=1;
             }
@@ -93,120 +93,62 @@ void Track::ReadTrack(unsigned TrackNumber){
     }
     if (TrackFound==0)
     {
-        cout<<"Failed to Find Track!"<<endl;
+        throw runtime_error("Failed to Find Track!");
     }
     else{
-        Input>>InputString;
-        Input>>InputInt[0];
-        Input>>InputString;
-        Input>>InputInt[1];
-        Dim=sf::Vector2u(InputInt[0],InputInt[1]);
-        Input>>InputString;
-        Input>>InputInt[0];
-        FinishDirection=InputInt[0];
-        Input>>InputString;
-        Input>>InputInt[0];
-        TotalStarting=InputInt[0];
-        Input>>InputString;
-        Input>>InputInt[0];
-        Input>>InputInt[1];
-        StartingPositions.clear();
-        StartingPositions.push_back(Vector2u(InputInt[0],InputInt[1]));
-        bool KeepGoing=1;
-        streampos onestepback=Input.tellg();
-        Input>>InputString;
-        if (InputString.compare("Tiles:")==0)
-        {
-            KeepGoing=0;
+        StorableVector2<unsigned> Dimensions("Dimensions:",Dim);
+        StorableSingle<unsigned> FinishingDirection("FinishingDirection:",FinishDirection);
+        StorableSingle<unsigned> TotalStartingPlayers("TotalStartingPlayers:",TotalStarting);
+        StorableVectorVector2<unsigned> TrackStartingPositions("StartingPositions:",StartingPositions);
+        StorableTileMap TileMap("Tiles:",Tiles);
+        while (InputString!="--EndTrack--"){
+            Storable* storable=nullptr;
+            InputStream>>InputString;
+
+            if (InputString=="Dimensions:")
+                storable=&Dimensions;
+            if (InputString=="FinishingDirection:")
+                storable=&FinishingDirection;
+            if (InputString=="TotalStartingPlayers:")
+                storable=&TotalStartingPlayers;
+            if (InputString=="StartingPositions:")
+                storable=&TrackStartingPositions;
+            if (InputString=="Tiles:")
+                storable=&TileMap;
+
+
+            if (storable)
+                storable->ReadFromStream(InputStream);
+
         }
-        else{
-            Input.seekg(onestepback);
-        }
-        while (KeepGoing)
-        {
-            Input>>InputInt[0];
-            Input>>InputInt[1];
-            StartingPositions.push_back(Vector2u(InputInt[0],InputInt[1]));
-            onestepback=Input.tellg();
-            Input>>InputString;
-            if (InputString.compare("Tiles:")==0)
-            {
-                KeepGoing=0;
-            }
-            else{
-                Input.seekg(onestepback);
-            }
-        }
-
-
-        Tile tile;
-        vector<Tile> VectorTile(Dim.y,tile);
-        vector<vector<Tile>> MatrixTile(Dim.x,VectorTile);
-        unsigned index=0;
-        while (index< Dim.x*Dim.y)
-        {
-            unsigned i=index%Dim.x;
-            unsigned j=index/Dim.x;
-            Input>>InputString;
-            if(InputString.compare(0,1, "[" )==0)
-            {
-                MatrixTile[i][j].Orientation=1;
-            }
-            else{
-                MatrixTile[i][j].Orientation=0;
-            }
-            InputString.erase(0,1);
-            istringstream (InputString) >> InputInt[0];
-
-            Input>>InputString;
-            InputString.erase(1,1);
-            istringstream (InputString) >> InputInt[1];
-
-            MatrixTile[i][j].isSquare= InputInt[0]==InputInt[1];
-
-            MatrixTile[i][j].Types=sf::Vector2u(InputInt[0], InputInt[1]);
-            index++;
-        }
-        Tiles=MatrixTile;
         TrackReady=1;
     }
-}
-
-
+    InputStream.close();
+ }
 
 void Track::WriteTrack(unsigned TrackNumber){
-    ofstream Input("Tracks.txt",ios::app);
-    Input<<"\n\n\n--StartTrack--\n\n"<<"TrackNumber: "<< TrackNumber << "\n";
-    Input<<"Width: "<<Dim.x<<" Height: "<<Dim.y<<"\n";
-    Input<<"FinishingDirection: "<<FinishDirection<<"\n";
-    Input<<"TotalStartingPlayers: "<<TotalStarting<<"\n";
-    Input<<"StartingPositions: ";
-    for(unsigned i=0; i<StartingPositions.size(); i++)
+    ofstream OutputStream("Tracks.txt",ios::app);
+    OutputStream<<"\n\n\n--StartTrack--\n\n"<<"TrackNumber: "<< TrackNumber << "\n";
+    vector<Storable*> storables;
+    StorableVector2<unsigned> Dimensions("Dimensions:",Dim);
+    storables.push_back(&Dimensions);
+    StorableSingle<unsigned> FinishingDirection("FinishingDirection:",FinishDirection);
+    storables.push_back(&FinishingDirection);
+    StorableSingle<unsigned> TotalStartingPlayers("TotalStartingPlayers:",TotalStarting);
+    storables.push_back(&TotalStartingPlayers);
+    StorableVectorVector2<unsigned> TrackStartingPositions("StartingPositions:",StartingPositions);
+    storables.push_back(&TrackStartingPositions);
+    StorableTileMap TileMap("Tiles:",Tiles);
+    storables.push_back(&TileMap);
+
+
+    for(auto index : storables)
     {
-        Input<<StartingPositions[i].x<<" "<<StartingPositions[i].y<<"\n";
+        index->WriteToStream(OutputStream);
     }
-    Input<<"\n";
-    Input<<"Tiles: ";
-    for(unsigned index=0; index<Dim.x*Dim.y; index++)
-    {
-        unsigned i=index%Dim.x;
-        unsigned j=index/Dim.x;
-        if (Tiles[i][j].Orientation==1)
-        {
-            Input<<"[";
-        }
-        else
-        {
-            Input<<"(";
-        }
-        Input<<Tiles[i][j].Types.x<<" "<<Tiles[i][j].Types.y<<") ";
-        if (i==Dim.x-1)
-        {
-            Input<<"\n";
-        }
-    }
-    Input<<"\n"<<"--EndTrack--";
-    Input.close(); //close it
+
+    OutputStream<<"\n"<<"--EndTrack--";
+    OutputStream.close();
 }
 
 void Track::FlushTrack(unsigned TrackNumber){

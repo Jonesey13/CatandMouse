@@ -8,6 +8,7 @@ double Game::getTime(){
     return Clock.getElapsedTime().asSeconds();
 }
 
+
 void Game::init(Configuration &NewConfig, sf::RenderWindow &NewWindow,unsigned &cycles, unsigned &frames){
     GameActive=1;
     CarTexture.loadFromFile("CarSprites.png");
@@ -28,7 +29,6 @@ void Game::init(Configuration &NewConfig, sf::RenderWindow &NewWindow,unsigned &
     {
         Player[i]=&race.Player[i];
     }
-
 
     PauseItem Option=PauseItem("Resume",ActionUnpause);
     PauseOptions.push_back(Option);
@@ -141,7 +141,8 @@ void Game::ProcessEvents(sf::Event &Event){
                 unsigned CurrentJoy=Event.joystickButton.joystickId;
                 unsigned CurrentButton=Event.joystickButton.button;
                 int CurrentPlayer=Config.JoyId[CurrentJoy];
-                if (CurrentPlayer!=-1 && CurrentPlayer<Config.NumberOfPlayers)
+                int NumberOfPlayers=Config.NumberOfPlayers;
+                if (CurrentPlayer!=-1 && CurrentPlayer<NumberOfPlayers)
                 {
                     map<unsigned, Action>* ButtonsToActions=&Config.ButtonsToActions[CurrentPlayer];
                     if (ButtonsToActions->find(CurrentButton)!=ButtonsToActions->end())
@@ -161,7 +162,8 @@ void Game::ProcessEvents(sf::Event &Event){
                 unsigned CurrentJoy=Event.joystickButton.joystickId;
                 unsigned CurrentButton=Event.joystickButton.button;
                 int CurrentPlayer=Config.JoyId[CurrentJoy];
-                if (CurrentPlayer!=-1 && CurrentPlayer<Config.NumberOfPlayers)
+                int NumberOfPlayers=Config.NumberOfPlayers;
+                if (CurrentPlayer!=-1 && CurrentPlayer<NumberOfPlayers)
                 {
                     map<unsigned, Action>* ButtonsToActions=&Config.ButtonsToActions[CurrentPlayer];
                     if (ButtonsToActions->find(CurrentButton)!=ButtonsToActions->end())
@@ -179,7 +181,8 @@ void Game::ProcessEvents(sf::Event &Event){
             {
                 unsigned currentjoy=Event.joystickMove.joystickId;
                 int CurrentPlayer=Config.JoyId[currentjoy];
-                if (CurrentPlayer!=-1 && CurrentPlayer<Config.NumberOfPlayers)
+                int NumberOfPlayers=Config.NumberOfPlayers;
+                if (CurrentPlayer!=-1 && CurrentPlayer<NumberOfPlayers)
                 {
                     Car* ThisPlayer=Player[Config.JoyId[currentjoy]];
                     if(sf::Joystick::getAxisPosition(currentjoy,sf::Joystick::X)<-50
@@ -269,20 +272,11 @@ void Game::Render(){
         convert<<"Player "<<race.VictorNumber<<" Has Won!";
         Vector2u Resolution=Window->getSize();
         unsigned VictoryTextSize=Resolution.y/(12.f);
-        sf::RectangleShape VictoryRectangle(sf::Vector2f(Resolution.x/1.5, VictoryTextSize*1.2));
-        VictoryRectangle.setFillColor(sf::Color::Blue);
-        sf::FloatRect Bounds = VictoryRectangle.getLocalBounds();
-        VictoryRectangle.setOrigin(Bounds.left + Bounds.width/2.0f,Bounds.top  + Bounds.height/2.0f);
-        VictoryRectangle.setPosition(sf::Vector2f(Resolution.x/2,Resolution.y/4));
+        sf::RectangleShape VictoryRectangle=CreateRectangle(Vector2d(Resolution.x/1.5, VictoryTextSize*1.2),
+                                                            sf::Color::Blue,Vector2d(Resolution.x/2,Resolution.y/4));
         Window->draw(VictoryRectangle);
-        sf::Text text;
-        text.setFont(font);
-        text.setCharacterSize(VictoryTextSize);
-        text.setString(convert.str());
-        text.setColor(sf::Color::Yellow);
-        sf::FloatRect textRect = text.getLocalBounds();
-        text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-        text.setPosition(sf::Vector2f(Resolution.x/2,Resolution.y/4));
+        sf::Text text=CreateText(convert.str(),&font ,VictoryTextSize,
+                                 sf::Color::Yellow, Vector2d(Resolution.x/2,Resolution.y/4));
         Window->draw(text);
     }
 
@@ -290,11 +284,8 @@ void Game::Render(){
     {
         Vector2u Resolution=Window->getSize();
         PauseTextSize=Resolution.y/(12.f);
-        sf::RectangleShape PauseRectangle(sf::Vector2f(Resolution.x/2, PauseTextSize*3));
-        PauseRectangle.setFillColor(sf::Color::Blue);
-        sf::FloatRect Bounds = PauseRectangle.getLocalBounds();
-        PauseRectangle.setOrigin(Bounds.left + Bounds.width/2.0f,Bounds.top  + Bounds.height/2.0f);
-        PauseRectangle.setPosition(sf::Vector2f(Resolution.x/2,Resolution.y/2));
+        sf::RectangleShape PauseRectangle=CreateRectangle(Vector2d(Resolution.x/2, PauseTextSize*3),
+                                                    sf::Color::Blue,Vector2d(Resolution.x/2,Resolution.y/2));
         Window->draw(PauseRectangle);
         sf::Text text;
         text.setFont(font);
@@ -309,9 +300,7 @@ void Game::Render(){
             else{
                 text.setColor(sf::Color::Red);
             }
-            sf::FloatRect textRect = text.getLocalBounds();
-            text.setOrigin(textRect.left + textRect.width/2.0f,textRect.top  + textRect.height/2.0f);
-            text.setPosition(sf::Vector2f(Resolution.x/2,Resolution.y/2+(i-0.5)*PauseTextSize));
+            RepositionText(text,Vector2d(Resolution.x/2,Resolution.y/2+(i-0.5)*PauseTextSize));
             Window->draw(text);
         }
     }
@@ -341,7 +330,6 @@ void Game::PrepareandScaleTriangle(sf::Vertex *tri, Vector2i TextPos, Vector2i P
     {
         tri[i]=quad[(i+Orientation)%4];
     }
-
 }
 
 void Game::ActionUnpause(){

@@ -1,9 +1,10 @@
 
 #include "configuration.h"
 
-ConfigController::ConfigController(string NewSig,Configuration &NewConfig): ConfigStorable(NewSig,NewConfig){
-        ButtonsToActions=&Config->ButtonsToActions;
-        JoyId=&Config->JoyId;
+ConfigController::ConfigController(string NewSig,Configuration &NewConfig): Storable(NewSig){
+    Config=&NewConfig;
+    ButtonsToActions=&Config->ButtonsToActions;
+    JoyId=&Config->JoyId;
 }
 
 void ConfigController::ReadFromStream(ifstream &inputstream){

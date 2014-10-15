@@ -30,7 +30,7 @@ class Editor
     vector<Clickable<unsigned>> ClickableUnsigneds;
     Clickable<unsigned> ClickableSelection;
     unsigned RenderSize=32;
-    bool OverLayON=0;
+    bool OverLayON=1;
     double Scaling=0;
     double ScalingTrack=0;
     double ScalingTools=0;
@@ -47,7 +47,7 @@ class Editor
                                  Vector2u Pos, unsigned Orientation, bool isSquare=0);
     vector<sf::Text> StartingNumbers;
     vector<sf::CircleShape> StartingCircles;
-    sf::VertexArray ToolBoxes;
+    vector<sf::RectangleShape> ToolBoxes;
 
 public:
     Editor(){};

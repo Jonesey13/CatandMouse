@@ -4,6 +4,7 @@
 #include "configuration.h"
 #include "race.h"
 #include "pauseitem.h"
+#include "renderfunctions.h"
 
 class Game
 {

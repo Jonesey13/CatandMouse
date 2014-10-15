@@ -43,8 +43,8 @@ void Race::UpdateLaps(){
     for (unsigned i=0; i<Player.size();i++)
     {
         Tile* CurrentTile=track.getTile(Player[i].Position.x, Player[i].Position.y);
-        sf::Vector2<set<string>> Detection=CurrentTile->Detection;
-        if (Detection.x.count("FINISH"))
+        Detect Detection=CurrentTile->Detection;
+        if (Detection.x.count(FINISH))
         {
             if (track.getFinishSquareHalf(Player[i].Position)==0)
             {
@@ -80,25 +80,25 @@ void Race::UpdateTraction(){
     for (unsigned i=0; i<Player.size();i++)
     {
         Tile* CurrentTile=track.getTile(Player[i].Position.x, Player[i].Position.y);
-        sf::Vector2<set<string>> Detection=CurrentTile->Detection;
+        Detect Detection=CurrentTile->Detection;
         bool Orientation=CurrentTile->Orientation;
         if (CurrentTile->isSquare || getTriangleHalf(Player[i].Position,Orientation)==0)
         {
-            if (Detection.x.count("NORMAL_TRACTION"))
+            if (Detection.x.count(NORMAL_TRACTION))
             {
                 Player[i].NormalTraction();
             }
-            if (Detection.x.count("SLIDING_TRACTION"))
+            if (Detection.x.count(SLIDING_TRACTION))
             {
                 Player[i].SlidingTraction();
             }
         }
         else{
-            if (Detection.y.count("NORMAL_TRACTION"))
+            if (Detection.y.count(NORMAL_TRACTION))
             {
                 Player[i].NormalTraction();
             }
-            if (Detection.y.count("SLIDING_TRACTION"))
+            if (Detection.y.count(SLIDING_TRACTION))
             {
                 Player[i].SlidingTraction();
             }
@@ -115,11 +115,11 @@ void Race::HandleDeaths(){
         }
         Vector2u CurrentSquare=Player[i].getGridPosition();
         Tile* CurrentTile=track.getTile(CurrentSquare.x,CurrentSquare.y);
-        sf::Vector2<set<string>> Detection=CurrentTile->Detection;
+        Detect Detection=CurrentTile->Detection;
         vector<Vector2d> Bounding;
         if (CurrentTile->isSquare)
         {
-            if( Detection.x.find("FALL")!=Detection.x.end())
+            if( Detection.x.find(FALL)!=Detection.x.end())
             {
                 Player[i].DeathSwitch=1;
                 Bounding=track.getTileBounding(CurrentSquare.x,CurrentSquare.y);
@@ -127,12 +127,12 @@ void Race::HandleDeaths(){
         }
         else{
             bool Orientation=CurrentTile->Orientation;
-            if (!getTriangleHalf(Player[i].Position,Orientation) && Detection.x.find("FALL")!=Detection.x.end())
+            if (!getTriangleHalf(Player[i].Position,Orientation) && Detection.x.find(FALL)!=Detection.x.end())
             {
                 Player[i].DeathSwitch=1;
                 Bounding=track.getTileBounding(CurrentSquare.x,CurrentSquare.y,0);
             }
-            if(getTriangleHalf(Player[i].Position,Orientation) && Detection.y.find("FALL")!=Detection.y.end())
+            if(getTriangleHalf(Player[i].Position,Orientation) && Detection.y.find(FALL)!=Detection.y.end())
             {
                 Player[i].DeathSwitch=1;
                 Bounding=track.getTileBounding(CurrentSquare.x,CurrentSquare.y,1);
@@ -173,14 +173,14 @@ void Race::HandleWallCollisions(){
                 if (index1>=0 && index1<trackwidth && index2>=0 && index2<trackheight)
                 {
                     Tile* CurrentTile=track.getTile(index1,index2);
-                    sf::Vector2<set<string>> Detection=CurrentTile->Detection;
-                    if(CurrentTile->isSquare && Detection.x.find("WALL")!=Detection.x.end())
+                    Detect Detection=CurrentTile->Detection;
+                    if(CurrentTile->isSquare && Detection.x.find(WALL)!=Detection.x.end())
                     {
                         BoundingTile={Vector2d(index1,index2),Vector2d(index1,index2+1),
                         Vector2d(index1+1,index2+1),Vector2d(index1+1,index2)};
                         TestCollision=1;
                     }
-                    if(CurrentTile->isSquare==0 && Detection.y.find("WALL")!=Detection.y.end())
+                    if(CurrentTile->isSquare==0 && Detection.y.find(WALL)!=Detection.y.end())
                     {
                         if(CurrentTile->Orientation==1)
                         {
@@ -191,7 +191,7 @@ void Race::HandleWallCollisions(){
                         }
                         TestCollision=1;
                     }
-                    if(CurrentTile->isSquare==0 && Detection.x.find("WALL")!=Detection.x.end())
+                    if(CurrentTile->isSquare==0 && Detection.x.find(WALL)!=Detection.x.end())
                     {
                         if(CurrentTile->Orientation==1)
                         {
@@ -270,6 +270,8 @@ void Race::HandlePlayerOnPlayerCollisions(){
     {
         for (unsigned j=i+1; j<Player.size();j++)
         {
+            if (Player[i].DeathSwitch==1 || Player[j].DeathSwitch==1)
+                continue;
             bool StillCorrecting=1;
             unsigned Attempts=0;
             while (StillCorrecting){
@@ -357,7 +359,7 @@ Vector2u Race::getNearestValidSquare(unsigned PlayerNumber){
     unsigned j=0;
     bool SquareValid=false;
     bool CarCollision=false;
-    vector<string> InvalidTiles={"FALL","WALL"};
+    vector<PROPERTIES> InvalidTiles={FALL,WALL};
     while (SquareValid==false || CarCollision==true)
     {
         CarCollision=false;
@@ -365,7 +367,7 @@ Vector2u Race::getNearestValidSquare(unsigned PlayerNumber){
         unsigned k1=index[j]%Dim.x;
         unsigned k2=index[j]/Dim.x;
         Tile* CurrentTile=track.getTile(k1,k2);
-        sf::Vector2<set<string>> Detection=CurrentTile->Detection;
+        Detect Detection=CurrentTile->Detection;
         for (unsigned i=0; i<InvalidTiles.size(); i++)
         {
             if (Detection.x.count(InvalidTiles[i])==1)

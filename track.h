@@ -7,18 +7,25 @@
 #include <sstream>
 
 #include "tile.h"
+#include "storable.h"
+#include "trackunsigned.h"
+#include "trackpairunsigned.h"
+#include "trackstarting.h"
+#include "tracktilemap.h"
 
 
 
 class Track
 {
+    friend class TrackPairUnsigned;
+    friend class TrackTileMap;
     vector<vector<Tile>> Tiles;
     Vector2u Dim;
 
 public:
     Track();
     void init(unsigned TrackNumber);
-    vector<Vector2u> StartingPositions;
+    vector<Vector2u> StartingPositions=vector<Vector2u>(8,Vector2u(0,0));
     Vector2u getDim();
     Tile *getTile(unsigned i, unsigned j);
     bool TrackReady=0;

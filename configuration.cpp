@@ -10,34 +10,56 @@ Configuration::Configuration(){
 }
 
 void Configuration::Load(){
-    ifstream inputstream("ConfigData.txt",ios::binary);
-    string Current;
-    while(inputstream>>Current){
-        ConfigStorable *Item=nullptr;
-        ConfigUnsigned UnsignedData;
-        ConfigController ControllerData;
-        if (Current=="NumberOfLaps:")
+    ifstream InputStream("ConfigData.txt",ios::binary);
+    string InputString;
+    StorableSingle<unsigned> LapData("NumberOfLaps:",NumberOfLaps);
+    vector<map<unsigned,unsigned>> ButtonsToNumbers;
+    StorableController ControllerData("ControllerSettings:",JoyId,ButtonsToNumbers);
+
+    while(InputStream>>InputString){
+        Storable *Item=nullptr;
+        if (InputString=="NumberOfLaps:")
         {
-            UnsignedData=ConfigUnsigned("NumberOfLaps",*this);
-            Item=&UnsignedData;
+            Item=&LapData;
         }
-        if (Current=="ControllerSettings:")
+        if (InputString=="ControllerSettings:")
         {
-            ControllerData=ConfigController("Controller",*this);
             Item=&ControllerData;
         }
         if(Item){
-            Item->ReadFromStream(inputstream);
+            Item->ReadFromStream(InputStream);
         }
     }
+
+    for (unsigned i=0; i<8;i++)
+    {
+        for(auto index : ButtonsToNumbers[i])
+            ButtonsToActions[i][index.first]=static_cast<Action>(index.second);
+    }
+
 }
 
 
 
 void Configuration::Save(){
-    ofstream outputstream("ConfigData.txt");
-    ConfigUnsigned UnsignedData=ConfigUnsigned("NumberOfLaps",*this);
-    UnsignedData.WriteToStream(outputstream);
-    ConfigController ControllerData=ConfigController("Controller",*this);
-    ControllerData.WriteToStream(outputstream);
+    ofstream OutputStream("ConfigData.txt");
+    vector<Storable*> storables;
+    StorableSingle<unsigned> LapData("NumberOfLaps:", NumberOfLaps);
+    storables.push_back(&LapData);
+
+    vector<map<unsigned,unsigned>> ButtonsToNumbers;
+    ButtonsToNumbers.resize(8);
+    for (unsigned i=0; i<8;i++)
+    {
+        for(auto index : ButtonsToActions[i])
+            ButtonsToNumbers[i][index.first]=index.second;
+    }
+    StorableController ControllerData("ControllerSettings:",JoyId,ButtonsToNumbers);
+    storables.push_back(&ControllerData);
+
+    for(auto index: storables)
+    {
+        index->WriteToStream(OutputStream);
+    }
+
 }

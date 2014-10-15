@@ -88,8 +88,15 @@ void Car::Update(double DeltaTime){
 }
 
 void Car::DeathUpdate(double DeltaTime){
-//    Velocity=Velocity/sqrt(DotProduct(Velocity,Velocity));
     Position+=DeltaTime*Velocity;
+    if (abs(Angular)>abs(AngularFriction*DeltaTime))
+    {
+        Angular=Angular-AngularFriction*Angular*DeltaTime;
+    }
+    else{
+        Angular=0;
+    }
+    Rotation=Rotation+Angular*DeltaTime;
     DeathTime+=DeltaTime;
     if(DeathTime>DeathDuration)
     {

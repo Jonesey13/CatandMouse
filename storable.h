@@ -1,5 +1,5 @@
-#ifndef CONFIGSTORABLE_H
-#define CONFIGSTORABLE_H
+#ifndef STORABLE_H
+#define STORABLE_H
 
 
 #include <SFML/System.hpp>
@@ -9,6 +9,10 @@
 #include <vector>
 #include <map>
 #include <fstream>
+#include <string>
+#include <sstream>
+#include <iostream>
+
 
 
 using namespace std;
@@ -16,20 +20,27 @@ using Vector2d=sf::Vector2<double>;
 using Vector2u=sf::Vector2u;
 using Vector2i=sf::Vector2i;
 using Vector2f=sf::Vector2f;
-class Configuration;
 
-class  ConfigStorable
+
+class  Storable
 {
 public:
-    virtual ~ConfigStorable()=default;
-    ConfigStorable()=default;
-    ConfigStorable(string NewSignature,Configuration &NewConfig): Sig(NewSignature), Config(&NewConfig){};
+    virtual ~Storable()=default;
+    Storable()=default;
+    Storable(string NewSignature): Sig(NewSignature){};
     string Sig;
-    Configuration *Config;
     virtual void ReadFromStream(ifstream &inputstream)=0;
     virtual void WriteToStream(ofstream &outputstream)=0;
 };
 
 
+#include "storablesingle.h"
+#include "storablevector.h"
+#include "storablevector2.h"
+#include "storablevectorvector2.h"
+#include "storabletilemap.h"
+#include "storablecontroller.h"
 
-#endif // CONFIGSTORABLE_H
+
+#endif // STORABLE_H
+

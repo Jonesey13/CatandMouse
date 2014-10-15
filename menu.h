@@ -5,6 +5,7 @@
 #include "configuration.h"
 #include "editoroptions.h"
 #include "track.h"
+#include "renderfunctions.h"
 
 
 #include <vector>

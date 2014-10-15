@@ -1,10 +1,9 @@
 
 #ifndef CONFIGCONTROLLER_H
 #define CONFIGCONTROLLER_H
+class Configuration;
 
-
-
-class ConfigController: public ConfigStorable
+class ConfigController: public Storable
 {
 public:
     ~ConfigController()=default;
@@ -12,6 +11,7 @@ public:
     ConfigController(string NewSig,Configuration &NewConfig);
     vector<map<unsigned,Action>> *ButtonsToActions;
     vector<int> *JoyId;
+    Configuration *Config;
     void ReadFromStream(ifstream &inputstream) override;
     void WriteToStream(ofstream &outputstream) override;
 };

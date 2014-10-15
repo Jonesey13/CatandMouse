@@ -18,9 +18,9 @@ using Vector2u=sf::Vector2u;
 using Vector2i=sf::Vector2i;
 using Vector2f=sf::Vector2f;
 
-enum Action {ACCELERATE,BRAKE};
+enum Action: unsigned {ACCELERATE,BRAKE};
 
-#include "configstorable.h"
+#include "storable.h"
 #include "configunsigned.h"
 #include "configcontroller.h"
 
