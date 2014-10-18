@@ -39,7 +39,6 @@
 		<Unit filename="car.cpp" />
 		<Unit filename="car.h" />
 		<Unit filename="clickable.h" />
-		<Unit filename="configunsigned.h" />
 		<Unit filename="configuration.cpp" />
 		<Unit filename="configuration.h" />
 		<Unit filename="editor.cpp" />
@@ -69,6 +68,14 @@
 		<Unit filename="storablevector2.h" />
 		<Unit filename="storablevectorvector2.h" />
 		<Unit filename="tile.h" />
+		<Unit filename="toolbarbutton.cpp" />
+		<Unit filename="toolbarbutton.h" />
+		<Unit filename="toolbarbuttonlist.cpp" />
+		<Unit filename="toolbarbuttonlist.h" />
+		<Unit filename="toolbaritem.cpp" />
+		<Unit filename="toolbaritem.h" />
+		<Unit filename="toolbarnumber.cpp" />
+		<Unit filename="toolbarnumber.h" />
 		<Unit filename="track.cpp" />
 		<Unit filename="track.h" />
 		<Extensions>

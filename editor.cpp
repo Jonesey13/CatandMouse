@@ -2,9 +2,16 @@
 
 
 void Editor::init(EditorOptions &NewEditOptions, sf::RenderWindow &NewWindow,unsigned &cycles, unsigned &frames){
+    Window=&NewWindow;
+    Vector2u Resolution=Window->getSize();
+
     ButtonTexture.loadFromFile("EditorSprites.png");
     TrackTexture.loadFromFile("TrackSprites.png");
     font.loadFromFile("Aller.ttf");
+    ToolbarItem::Font=&font;
+    ToolbarItem::Window=Window;
+    ToolbarItem::TextSize=0.02*Resolution.x;
+
     EditorActive=1;
 
     frameptr=&frames;
@@ -22,8 +29,7 @@ void Editor::init(EditorOptions &NewEditOptions, sf::RenderWindow &NewWindow,uns
         track.ReadTrack(EditOptions.TrackNumber);
     }
 
-    Window=&NewWindow;
-    Vector2u Resolution=Window->getSize();
+
     TrackTiles.setPrimitiveType(sf::Triangles);
     OverLay.setPrimitiveType(sf::Lines);
     Vector2u TrackDim=track.getDim();
@@ -41,33 +47,26 @@ void Editor::init(EditorOptions &NewEditOptions, sf::RenderWindow &NewWindow,uns
 
 
 
-    bool *BoolPointer=&OverLayON;
-    Clickable<bool> OverLayButton=Clickable<bool>(BoolPointer,vector<Vector2i>{Vector2i(0,1),Vector2i(0,0)},0.05*Resolution.x
-                                  , Vector2f(0.9*Resolution.x, 0.1*Resolution.y),vector<string>{"Overlay", "ON/OFF"},0.02*Resolution.x);
-    ClickableBools.push_back(OverLayButton);
-    unsigned *UnsignedPointer=&track.FinishDirection;
-    Clickable<unsigned> DirectionButton=Clickable<unsigned>(UnsignedPointer,vector<Vector2i>{Vector2i(1,0),Vector2i(1,1),Vector2i(1,2),Vector2i(1,3)},0.05*Resolution.x
-                                  , Vector2f(0.9*Resolution.x, 0.3*Resolution.y),vector<string>{"Finishing", "Direction"},0.02*Resolution.x);
-    ClickableUnsigneds.push_back(DirectionButton);
-    UnsignedPointer=&track.TotalStarting;
-    vector<Vector2i> textpos(8,Vector2i());
-    for (unsigned i=0; i<8; ++i)
-    {
-        textpos[i]=Vector2i(2,i);
-    }
-    Clickable<unsigned> TotalPlayersButton=Clickable<unsigned>(UnsignedPointer,textpos,0.05*Resolution.x, Vector2f(0.9*Resolution.x, 0.5*Resolution.y)
-                                           ,vector<string>{"No. Starting", "Players"},0.02*Resolution.x,1);
-    ClickableUnsigneds.push_back(TotalPlayersButton);
+    ToolbarItems.push_back(make_shared<ToolbarButton>(vector<string>{"Overlay", "ON/OFF"},Vector2d(0.925*Resolution.x, 0.1*Resolution.y)
+                                ,0.05*Resolution.x, OverLayAction, ButtonTexture
+                                , vector<Vector2u>{Vector2u(0,0),Vector2u(0,1)}, 1));
 
+    ToolbarItems.push_back(make_shared<ToolbarButton>(vector<string>{"Finishing", "Direction"},Vector2d(0.925*Resolution.x, 0.3*Resolution.y)
+                                ,0.05*Resolution.x, FinishDirectionAction, ButtonTexture
+                                , vector<Vector2u>{Vector2u(1,0),Vector2u(1,1),Vector2u(1,2),Vector2u(1,3)}));
+
+    vector<Vector2u> textpos;
     textpos.resize(5);
     for (unsigned i=0; i<5; ++i)
     {
-        textpos[i]=Vector2i(0,i);
+        textpos[i]=Vector2u(0,i);
     }
-    UnsignedPointer=&PaintSelection;
-    ClickableSelection=Clickable<unsigned>(UnsignedPointer,textpos,0.05*Resolution.x, Vector2f(0.1*Resolution.x, 0.9*Resolution.y)
-                                           ,vector<string>{"Paint Selection"},0.02*Resolution.x);
+    ToolbarItems.push_back(make_shared<ToolbarButtonList>(vector<string>{"Paint", "Selection"},Vector2d(0.3*Resolution.x, 0.925*Resolution.y)
+                                ,0.05*Resolution.x, PaintSelectionAction, TrackTexture, textpos));
 
+
+    ToolbarItems.push_back(make_shared<ToolbarNumber>(vector<string>{"No. Starting", "Players"},Vector2d(0.925*Resolution.x, 0.5*Resolution.y)
+                            ,0.05*Resolution.x, track.TotalStarting, 1,8));
 
     for (unsigned i=0; i<8 ; ++i)
     {
@@ -81,7 +80,6 @@ void Editor::init(EditorOptions &NewEditOptions, sf::RenderWindow &NewWindow,uns
     }
     Clock.restart();
 
-    AdjustText(ExitMessage,"Save File? (Y/N)",&font,Scaling,sf::Color::Yellow,Vector2d(Resolution.x/2,Resolution.y/2));
 
 
 }
@@ -230,17 +228,8 @@ void Editor::Update(double DeltaTime){
             }
 
         }
-        else{
-            for (unsigned i=0; i<ClickableBools.size();i++)
-            {
-                ClickableBools[i].CheckAndUpdate(sf::Mouse::getPosition(*Window));
-            }
-            for (unsigned i=0; i<ClickableUnsigneds.size();i++)
-            {
-                ClickableUnsigneds[i].CheckAndUpdate(sf::Mouse::getPosition(*Window));
-            }
-            ClickableSelection.CheckAndUpdate(sf::Mouse::getPosition(*Window));
-        }
+        for (auto& index: ToolbarItems)
+            index->Update(*this);
         ClickLeft=0;
         ClickRight=0;
     }
@@ -265,6 +254,7 @@ void Editor::Update(double DeltaTime){
 
 void Editor::Render(){
     Vector2u TrackDim=track.getDim();
+    Vector2u Resolution=Window->getSize();
     TrackTiles.resize((TrackDim.x*TrackDim.y)*6);
     OverLay.resize((TrackDim.x*TrackDim.y)*12);
     unsigned current=0;
@@ -340,21 +330,18 @@ void Editor::Render(){
     {
         Window->draw(index);
     }
-    sf::Texture *TexturePointer=&ButtonTexture;
 
-    for (unsigned i=0; i<ClickableBools.size();i++)
-    {
-        ClickableBools[i].Render(Window,TexturePointer);;
-    }
-    for (unsigned i=0; i<ClickableUnsigneds.size();i++)
-    {
-        ClickableUnsigneds[i].Render(Window,TexturePointer);;
-    }
-    ClickableSelection.Render(Window,&TrackTexture);
+    for (auto &index : ToolbarItems)
+        index->Render();
 
     if(PreExitFlag==1)
     {
-       Window->draw(ExitMessage);
+        unsigned SaveTextSize=Resolution.y/(12.f);
+        sf::RectangleShape SaveRectangle=CreateRectangle(Vector2d(Resolution.x/1.5, SaveTextSize*1.2),
+                                                            sf::Color::Blue,Vector2d(Resolution.x/2,Resolution.y/2));
+        Window->draw(SaveRectangle);
+        sf::Text SaveMessage=CreateText("Save File? (Y/N)",&font,SaveTextSize,sf::Color::Yellow,Vector2d(Resolution.x/2,Resolution.y/2));
+        Window->draw(SaveMessage);
     }
     Window->display();
 
@@ -397,6 +384,21 @@ void Editor::PrepareandScaleTriangle(sf::Vertex *tri, sf::Vertex *lines ,
 
 }
 
+void Editor::OverLayAction(unsigned& RenderIndex){
+    OverLayON=!OverLayON;
+    RenderIndex=OverLayON;
+}
 
+void Editor::FinishDirectionAction(unsigned& RenderIndex){
+    unsigned &Direction=track.FinishDirection;
+    if (Direction!=3)
+        Direction++;
+    else
+        Direction=0;
+    RenderIndex=Direction;
+}
 
+void Editor::PaintSelectionAction(unsigned &RenderIndex){
+    PaintSelection=RenderIndex;
+}
 

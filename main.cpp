@@ -3,17 +3,19 @@
 #include "editor.h"
 #include "menu.h"
 
-Vector2i Resolution=Vector2i(800,600);
-double CyclesPerSecond=100;
-double CycleTime=1/CyclesPerSecond;
-double FramesPerSecond=60;
-double FrameTime=1/FramesPerSecond;
-sf::Clock GameClock;
-unsigned cycles=0;
-unsigned frames=0;
+
 
 int main()
 {
+    Vector2i Resolution=Vector2i(800,600);
+    double CyclesPerSecond=100;
+    double CycleTime=1/CyclesPerSecond;
+    double FramesPerSecond=60;
+    double FrameTime=1/FramesPerSecond;
+    sf::Clock GameClock;
+    unsigned cycles=0;
+    unsigned frames=0;
+
     sf::RenderWindow Window(sf::VideoMode(Resolution.x, Resolution.y), "Cat & Mouse");
     sf::Event Event;
     Menu menu(Window);

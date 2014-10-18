@@ -3,11 +3,12 @@
 
 #include "editoroptions.h"
 #include "track.h"
-#include "clickable.h"
+//#include "clickable.h"
+#include "toolbaritem.h"
 #include "functions.h"
 #include "renderfunctions.h"
 
-
+#include <memory>
 #include <iostream>
 #include <sstream>
 
@@ -15,6 +16,7 @@
 
 class Editor
 {
+private:
     sf::Font font;
     sf::Texture ButtonTexture;
     sf::Texture TrackTexture;
@@ -26,9 +28,11 @@ class Editor
     sf::Clock Clock;
     sf::VertexArray TrackTiles;
     sf::VertexArray OverLay;
-    vector<Clickable<bool>> ClickableBools;
-    vector<Clickable<unsigned>> ClickableUnsigneds;
-    Clickable<unsigned> ClickableSelection;
+
+    vector<shared_ptr<ToolbarItem>> ToolbarItems;
+//    vector<Clickable<bool>> ClickableBools;
+//    vector<Clickable<unsigned>> ClickableUnsigneds;
+//    Clickable<unsigned> ClickableSelection;
     unsigned RenderSize=32;
     bool OverLayON=1;
     double Scaling=0;
@@ -40,17 +44,21 @@ class Editor
     bool ExitFlag=0;
     bool StartFlag=0;
     bool SaveFlag=0;
-    unsigned PaintSelection;
-    unsigned PlayerSelection;
-    sf::Text ExitMessage;
+    unsigned PaintSelection=0;
+    unsigned PlayerSelection=0;
     void PrepareandScaleTriangle(sf::Vertex *tri, sf::Vertex *lines, Vector2u TextPos,
                                  Vector2u Pos, unsigned Orientation, bool isSquare=0);
     vector<sf::Text> StartingNumbers;
     vector<sf::CircleShape> StartingCircles;
     vector<sf::RectangleShape> ToolBoxes;
 
+    void OverLayAction(unsigned &RenderIndex);
+    void FinishDirectionAction(unsigned &RenderIndex);
+    void PaintSelectionAction(unsigned &RenderIndex);
+
 public:
     Editor(){};
+    //Editor(EditorOptions &NewEditOptions, sf::RenderWindow &NewWindow,unsigned &cycles, unsigned &frames);
     bool EditorActive=0;
     double getTime(){return Clock.getElapsedTime().asSeconds();};
     void init(EditorOptions &NewEditOptions, sf::RenderWindow &NewWindow,unsigned &cycles, unsigned &frames);

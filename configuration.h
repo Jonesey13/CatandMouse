@@ -21,8 +21,6 @@ using Vector2f=sf::Vector2f;
 enum Action: unsigned {ACCELERATE,BRAKE};
 
 #include "storable.h"
-#include "configunsigned.h"
-#include "configcontroller.h"
 
 class Configuration
 {
