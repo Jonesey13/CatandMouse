@@ -25,16 +25,16 @@ void ToolbarButtonList::Update(Editor &editor){
     int Half=Width/2;
     Vector2i MouseLocation=sf::Mouse::getPosition(*Window);
     for(unsigned i=0; i<Total; i++)
-        {
-            vector<Vector2i> Region={Vector2i(Position.x-Half-RenderHalf+Width*i,Position.x+Half-RenderHalf+Width*i),
-                                    Vector2i(Position.y-Half+TextSize,Position.y+Width+Half+TextSize)};
-            if (MouseLocation.x>Region[0].x && MouseLocation.x<Region[0].y
-                &&  MouseLocation.y>Region[1].x && MouseLocation.y<Region[1].y)
-                {
-                    RenderIndex=i;
-                    (editor.*Action)(RenderIndex);
-                }
-        }
+    {
+        vector<Vector2i> Region={Vector2i(Position.x-Half-RenderHalf+Width*i,Position.x+Half-RenderHalf+Width*i),
+                                Vector2i(Position.y-Half+TextSize,Position.y+Width+Half+TextSize)};
+        if (MouseLocation.x>Region[0].x && MouseLocation.x<Region[0].y
+            &&  MouseLocation.y>Region[1].x && MouseLocation.y<Region[1].y)
+            {
+                RenderIndex=i;
+                (editor.*Action)(RenderIndex);
+            }
+    }
 }
 
 void ToolbarButtonList::Render(){
