@@ -11,29 +11,10 @@ OBJECTS=$(SOURCES:.cpp=.o)
 CatandMouse: $(OBJECTS)
 	$(CXX) -o CatandMouse.exe $(OBJECTS) $(LDFLAGS) $(LDLIBS)
 
-car.o:
+%.o: %.cpp
+	g++ --std=c++11 -IC:\SFML-2.1\include -c $< -o $@ 
+	
 
-configuration.o:
-
-editor.o:
-
-functions.o:
-
-game.o:
-
-main.o:
-
-menu.o:
-
-race.o:
-
-renderfunctions.o:
-
-track.o:
-
-$(TOOLBARSOURCES) : 
-
-$(STORABLESOURCES) :
 
 clean:
 	rm -rf *.o 
