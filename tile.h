@@ -24,7 +24,7 @@ public:
     Detect Detection=sf::Vector2<set<PROPERTIES>>(set<PROPERTIES>(),set<PROPERTIES>());
     bool isSquare=1;
     bool Orientation=0;
-    Vector2u Types=sf::Vector2u();
+    Vector2u Types=sf::Vector2u(1,1);
 };
 
 #endif // TILE_H

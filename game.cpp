@@ -52,7 +52,6 @@ void Game::init(Configuration &NewConfig, sf::RenderWindow &NewWindow,unsigned &
     }
 
     Clock.restart();
-
 }
 
 

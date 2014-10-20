@@ -2,9 +2,9 @@
 
 
 ToolbarButtonList::ToolbarButtonList(vector<string> NewTitle,Vector2d NewPosition,unsigned NewWidth,EditorVoidptr NewAction,
-                             sf::Texture& NewTexture, vector<Vector2u> NewTexturePositions, unsigned StartingIndex)
+                             sf::Texture& NewTexture, vector<Vector2u> NewTexturePositions, unsigned StartingIndex , unsigned *BindingTarget)
             : ToolbarItem(NewTitle,NewPosition,NewWidth),  Action(NewAction), Texture(&NewTexture),
-            TexturePositions(NewTexturePositions), RenderIndex(StartingIndex)
+            TexturePositions(NewTexturePositions), RenderIndex(StartingIndex) , RenderBind(BindingTarget)
 {
     Total=TexturePositions.size();
     RenderHalf=(Total-1)*Width/2.0;
@@ -35,10 +35,13 @@ void ToolbarButtonList::Update(Editor &editor){
                 (editor.*Action)(RenderIndex);
             }
     }
+
 }
 
 void ToolbarButtonList::Render(){
     ToolbarItem::Render();
+    if(RenderBind)
+        RenderIndex=*RenderBind;
 
     for(unsigned i=0; i<Total; i++)
         Window->draw(Backgrounds[i]);

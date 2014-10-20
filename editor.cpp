@@ -29,15 +29,6 @@ void Editor::init(EditorOptions &NewEditOptions, sf::RenderWindow &NewWindow,uns
         track.ReadTrack(EditOptions.TrackNumber);
     }
 
-
-    TrackTiles.setPrimitiveType(sf::Triangles);
-    OverLay.setPrimitiveType(sf::Lines);
-    Vector2u TrackDim=track.getDim();
-    Vector2u TrackRes=Vector2u(TrackDim.x,TrackDim.y);
-    Scaling=min(Resolution.x/static_cast<double>(TrackRes.x), Resolution.y/static_cast<double>(TrackRes.y));
-    ScalingTrack=0.85*Scaling;
-    ScalingTools=0.15*Scaling;
-
     sf::RectangleShape Rectangle=CreateRectangle(Vector2d(0.15*Resolution.x,Resolution.y),sf::Color(80,80,80)
                                                 , Vector2d (0.85*Resolution.x+0.5*0.15*Resolution.x,0.5*Resolution.y));
     ToolBoxes.push_back(Rectangle);
@@ -62,12 +53,35 @@ void Editor::init(EditorOptions &NewEditOptions, sf::RenderWindow &NewWindow,uns
         textpos[i]=Vector2u(0,i);
     }
     ToolbarItems.push_back(make_shared<ToolbarButtonList>(vector<string>{"Paint", "Selection"},Vector2d(0.3*Resolution.x, 0.925*Resolution.y)
-                                ,0.05*Resolution.x, PaintSelectionAction, TrackTexture, textpos));
+                                ,0.05*Resolution.x, PaintSelectionAction, TrackTexture, textpos,0,&PaintSelection));
 
 
     ToolbarItems.push_back(make_shared<ToolbarNumber>(vector<string>{"No. Starting", "Players"},Vector2d(0.925*Resolution.x, 0.5*Resolution.y)
-                            ,0.05*Resolution.x, track.TotalStarting, 1,8));
+                                                        ,0.05*Resolution.x, track.TotalStarting, 1,8));
 
+    ToolbarItems.push_back(make_shared<ToolbarNumber>(vector<string>{"Width"},Vector2d(0.925*Resolution.x, 0.65*Resolution.y)
+                                                        ,0.05*Resolution.x, track.Dim.x, 1,50,ReshapeTrack));
+
+    ToolbarItems.push_back(make_shared<ToolbarNumber>(vector<string>{"Height"},Vector2d(0.925*Resolution.x, 0.8*Resolution.y)
+                                                        ,0.05*Resolution.x, track.Dim.y, 1,50,ReshapeTrack));
+
+    ToolbarItems.push_back(make_shared<ToolbarItem>(vector<string>{"H=Help"},Vector2d(0.925*Resolution.x, 0.95*Resolution.y)
+                                                        ,0.05*Resolution.x));
+
+    HelpMessages={"Press Enter to Exit or Save",
+                    "Num1-Num5 sets the paint tile",
+                    "S sets the current player position",
+                    "D switches player",
+                    "H to close this message"};
+
+
+    TrackTiles.setPrimitiveType(sf::Triangles);
+    OverLay.setPrimitiveType(sf::Lines);
+    Vector2u TrackDim=track.getDim();
+    Vector2u TrackRes=Vector2u(TrackDim.x,TrackDim.y);
+    Scaling=min(Resolution.x/static_cast<double>(TrackRes.x), Resolution.y/static_cast<double>(TrackRes.y));
+    ScalingTrack=0.85*Scaling;
+    ScalingTools=0.15*Scaling;
     for (unsigned i=0; i<8 ; ++i)
     {
         sf::CircleShape Circle=CreateCircle(0.3*Scaling,sf::Color::Green,Vector2d(0,0));
@@ -119,19 +133,19 @@ void Editor::ProcessEvents(sf::Event &Event){
             case sf::Keyboard::Return:
                 PreExitFlag=1;
                 break;
-            case sf::Keyboard::Num0:
+            case sf::Keyboard::Num1:
                 PaintSelection=0;
                 break;
-            case sf::Keyboard::Num1:
+            case sf::Keyboard::Num2:
                 PaintSelection=1;
                 break;
-            case sf::Keyboard::Num2:
+            case sf::Keyboard::Num3:
                 PaintSelection=2;
                 break;
-            case sf::Keyboard::Num3:
+            case sf::Keyboard::Num4:
                 PaintSelection=3;
                 break;
-            case sf::Keyboard::Num4:
+            case sf::Keyboard::Num5:
                 PaintSelection=4;
                 break;
             case sf::Keyboard::Y:
@@ -157,6 +171,11 @@ void Editor::ProcessEvents(sf::Event &Event){
                 else
                     PlayerSelection=0;
                 break;
+            case sf::Keyboard::H:
+                if(HelpFlag==0)
+                    HelpFlag=1;
+                else
+                    HelpFlag=0;
             default:
                 break;
             }
@@ -334,6 +353,27 @@ void Editor::Render(){
     for (auto &index : ToolbarItems)
         index->Render();
 
+    if(HelpFlag)
+    {
+        vector<sf::Text> HelpText;
+        unsigned Size=HelpMessages.size();
+        double TextSize=Resolution.y/(20.0);
+        double Shift=(Size-1)*TextSize/2.0;
+        for (unsigned i=0; i<HelpMessages.size();i++)
+        {
+            HelpText.push_back(CreateText(HelpMessages[i],&font ,TextSize,
+                                 sf::Color::Red, Vector2d(Resolution.x/2,Resolution.y/2+i*TextSize-Shift)));
+        }
+        sf::RectangleShape VictoryRectangle=CreateRectangle(Vector2d(Resolution.x/1.5, TextSize*(Size+0.2)),
+                                                            sf::Color::Blue,Vector2d(Resolution.x/2,Resolution.y/2));
+        Window->draw(VictoryRectangle);
+
+        for (unsigned i=0; i<HelpMessages.size();i++)
+        {
+            Window->draw(HelpText[i]);
+        }
+    }
+
     if(PreExitFlag==1)
     {
         unsigned SaveTextSize=Resolution.y/(12.f);
@@ -400,5 +440,36 @@ void Editor::FinishDirectionAction(unsigned& RenderIndex){
 
 void Editor::PaintSelectionAction(unsigned &RenderIndex){
     PaintSelection=RenderIndex;
+}
+
+void Editor::ReshapeTrack(){
+    track.Reshape();
+    Vector2u Resolution=Window->getSize();
+    Vector2u TrackDim=track.getDim();
+    Vector2u TrackRes=Vector2u(TrackDim.x,TrackDim.y);
+    Scaling=min(Resolution.x/static_cast<double>(TrackRes.x), Resolution.y/static_cast<double>(TrackRes.y));
+    ScalingTrack=0.85*Scaling;
+    ScalingTools=0.15*Scaling;
+
+    for (auto &index :track.StartingPositions)
+    {
+        if (index.x>=TrackDim.x)
+            index.x=TrackDim.x-1;
+        if (index.y>=TrackDim.y)
+            index.y=TrackDim.y-1;
+    }
+
+    StartingCircles.clear();
+    StartingNumbers.clear();
+    for (unsigned i=0; i<8 ; ++i)
+    {
+        sf::CircleShape Circle=CreateCircle(0.3*Scaling,sf::Color::Green,Vector2d(0,0));
+        StartingCircles.push_back(Circle);
+
+        ostringstream convert;
+        convert<<i+1;
+        sf::Text text=CreateText(convert.str(),&font,0.5*Scaling,sf::Color::Red,Vector2d(0,0));
+        StartingNumbers.push_back(text);
+    }
 }
 

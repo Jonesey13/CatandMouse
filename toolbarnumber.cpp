@@ -2,8 +2,8 @@
 
 
 ToolbarNumber::ToolbarNumber( vector<string> NewTitle,Vector2d NewPosition, unsigned NewWidth
-                             , unsigned &NewTarget, unsigned NewMin, unsigned NewMax)
-                  : ToolbarItem(NewTitle,NewPosition,NewWidth), Target(&NewTarget), Min(NewMin), Max(NewMax)
+                             , unsigned &NewTarget, unsigned NewMin, unsigned NewMax, EditorVoidptr ChangeAction)
+                  : ToolbarItem(NewTitle,NewPosition,NewWidth), Target(&NewTarget), Min(NewMin), Max(NewMax), Action(ChangeAction)
 {
     LeftButtonBox=CreateLineBox(Vector2d(Position.x-2*TextSize,Position.y+TextSize),Width,sf::Color::Red);
     RightButtonBox=CreateLineBox(Vector2d(Position.x+2*TextSize,Position.y+TextSize),Width,sf::Color::Red);
@@ -27,6 +27,7 @@ ToolbarNumber::ToolbarNumber( vector<string> NewTitle,Vector2d NewPosition, unsi
 
 void ToolbarNumber::Update(Editor &editor){
     int Half=Width/2.0;
+    bool Change=0;
     Vector2i MouseLocation=sf::Mouse::getPosition(*Window);
     vector<Vector2i> RegionLeft={Vector2i(Position.x-Half-2*TextSize,Position.x-2*TextSize+Half),
                                 Vector2i(Position.y-Half+TextSize,Position.y+Width+Half+TextSize)};
@@ -38,6 +39,7 @@ void ToolbarNumber::Update(Editor &editor){
                 (*Target)--;
             else
                 *Target=Max;
+            Change=1;
         }
 
     vector<Vector2i> RegionRight={Vector2i(Position.x-Half+2*TextSize,Position.x+2*TextSize+Half),
@@ -50,7 +52,12 @@ void ToolbarNumber::Update(Editor &editor){
                 (*Target)++;
             else
                 *Target=Min;
+            Change=1;
         }
+    if (Change==1 && Action)
+    {
+        (editor.*Action)();
+    }
 }
 
 void ToolbarNumber::Render(){

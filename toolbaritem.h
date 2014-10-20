@@ -32,7 +32,7 @@ public:
     static unsigned TextSize;
 
     ToolbarItem( vector<string> NewTitle,Vector2d NewPosition, unsigned NewWidth  );
-    virtual void Update(Editor &editor)=0;
+    virtual void Update(Editor &editor){};
     virtual void Render();
     vector<string> Title;
     Vector2d Position;

@@ -7,7 +7,8 @@ void StorableTileMap::ReadFromStream(ifstream &inputstream){
     string InputString;
     vector<vector<Tile>> &Tiles=*Target;
     Tiles.clear();
-    Tiles.push_back(VectorTile);
+    vector<vector<Tile>> SwappedTiles;
+    SwappedTiles.push_back(VectorTile);
     unsigned i=0;
     while (!inputstream.eof())
     {
@@ -28,14 +29,14 @@ void StorableTileMap::ReadFromStream(ifstream &inputstream){
 
         tile.isSquare= InputInt.x==InputInt.y;
         tile.Types=InputInt;
-        Tiles[i].push_back(tile);
+        SwappedTiles[i].push_back(tile);
 
         streampos StepBack=inputstream.tellg();
         inputstream>>InputString;
         if(InputString=="-")
         {
             i++;
-            Tiles.push_back(VectorTile);
+            SwappedTiles.push_back(VectorTile);
         }
         else{
             inputstream.seekg(StepBack);
@@ -45,10 +46,21 @@ void StorableTileMap::ReadFromStream(ifstream &inputstream){
         inputstream>>InputString;
         if(InputString=="----")
         {
-            Tiles.pop_back();
+            SwappedTiles.pop_back();
             break;
         }
         inputstream.seekg(StepBack);
+    }
+    Vector2u SwappedSize=Vector2u(SwappedTiles.size(),SwappedTiles[0].size());
+    Vector2u Size=Vector2u(SwappedSize.y,SwappedSize.x);
+    VectorTile=vector<Tile>(Size.y,tile);
+    Tiles=vector<vector<Tile>>(Size.x,VectorTile);
+    for (unsigned i1=0; i1<Size.x; i1++)
+    {
+        for (unsigned i2=0; i2<Size.y; i2++)
+        {
+            Tiles[i1][i2]=SwappedTiles[i2][i1];
+        }
     }
 }
 

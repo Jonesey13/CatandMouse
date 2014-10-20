@@ -15,13 +15,15 @@ class Track
 {
     friend class TrackPairUnsigned;
     friend class TrackTileMap;
+    friend class Editor;
     vector<vector<Tile>> Tiles;
     Vector2u Dim;
+    void Reshape();
 
 public:
     Track();
     void init(unsigned TrackNumber);
-    vector<Vector2u> StartingPositions=vector<Vector2u>(8,Vector2u(0,0));
+    vector<Vector2u> StartingPositions;
     Vector2u getDim();
     Tile *getTile(unsigned i, unsigned j);
     bool TrackReady=0;

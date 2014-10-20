@@ -13,7 +13,7 @@ public:
     ~ToolbarButtonList()=default;
     ToolbarButtonList()=default;
     ToolbarButtonList(vector<string> NewTitle,Vector2d NewPosition,unsigned NewWidth,EditorVoidptr NewAction, sf::Texture& NewTexture
-                  , vector<Vector2u> NewTexturePositions, unsigned StartingIndex=0);
+                  , vector<Vector2u> NewTexturePositions, unsigned StartingIndex=0, unsigned *BindingTarget=nullptr);
     void Update(Editor &editor) override;
     void Render() override;
 
@@ -24,6 +24,7 @@ public:
     double RenderHalf;
     unsigned RenderIndex=0;
     unsigned RenderSize=32;
+    unsigned *RenderBind=nullptr;
 
 };
 

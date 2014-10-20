@@ -3,6 +3,10 @@
 
 
 Track::Track(){
+    for (unsigned i=0; i<8;i++)
+    {
+        StartingPositions.push_back(Vector2u(i,0));
+    }
 }
 
 void Track::init(unsigned TrackNumber)
@@ -203,20 +207,24 @@ void Track::SetBlank(Vector2u NewDim){
     Tile tile;
     vector<Tile> VectorTile(Dim.y,tile);
     vector<vector<Tile>> MatrixTile(Dim.x,VectorTile);
-    unsigned index=0;
-    while (index< Dim.x*Dim.y)
-    {
-        unsigned i=index%Dim.x;
-        unsigned j=index/Dim.x;
-        MatrixTile[i][j].Orientation=0;
-        MatrixTile[i][j].isSquare=1;
-        MatrixTile[i][j].Types=sf::Vector2u(1,1);
-        index++;
-    }
     Tiles=MatrixTile;
 }
 
-
+void Track::Reshape(){
+    Vector2u NewSize=Dim;
+    vector<Tile> TileVector(NewSize.y,Tile());
+    vector<vector<Tile>> NewTiles(NewSize.x,TileVector);
+    Vector2u OldSize=Vector2u(Tiles.size(),Tiles[0].size());
+    Vector2u MinSize=Vector2u(min(OldSize.x,NewSize.x),min(OldSize.y,NewSize.y));
+    for (unsigned i=0; i<MinSize.x; i++)
+    {
+        for (unsigned j=0; j<MinSize.y;j++)
+        {
+            NewTiles[i][j]=Tiles[i][j];
+        }
+    }
+    Tiles=NewTiles;
+}
 
 bool Track::getFinishSquareHalf(Vector2d Position){
     Vector2u TilePosition=Vector2u(Position.x,Position.y);

@@ -57,18 +57,17 @@
 	<iostream>
 	"clickable.h"
 
-1413653746 source:c:\users\alex jones\documents\github\catandmouse\editor.cpp
+1413837173 source:c:\users\alex jones\documents\github\catandmouse\editor.cpp
 	"editor.h"
 
 1412693177 source:c:\users\alex jones\documents\github\catandmouse\functions.cpp
 	"functions.h"
 
-1412851371 source:c:\users\alex jones\documents\github\catandmouse\game.cpp
+1413822913 source:c:\users\alex jones\documents\github\catandmouse\game.cpp
 	"game.h"
 
-1413630717 source:c:\users\alex jones\documents\github\catandmouse\main.cpp
+1413756094 source:c:\users\alex jones\documents\github\catandmouse\main.cpp
 	"game.h"
-	"track.h"
 	"editor.h"
 	"menu.h"
 
@@ -78,7 +77,7 @@
 1408653721 source:c:\users\alex jones\documents\github\catandmouse\tile.cpp
 	"header.h"
 
-1413154898 source:c:\users\alex jones\documents\github\catandmouse\track.cpp
+1413822271 source:c:\users\alex jones\documents\github\catandmouse\track.cpp
 	"track.h"
 	"functions.h"
 
@@ -107,7 +106,7 @@
 	<numeric>
 	<algorithm>
 
-1413632529 c:\users\alex jones\documents\github\catandmouse\editor.h
+1413836226 c:\users\alex jones\documents\github\catandmouse\editor.h
 	"editoroptions.h"
 	"track.h"
 	"toolbaritem.h"
@@ -129,14 +128,14 @@
 	<sstream>
 	"storable.h"
 
-1413547081 c:\users\alex jones\documents\github\catandmouse\track.h
+1413841011 c:\users\alex jones\documents\github\catandmouse\track.h
 	<iostream>
 	<fstream>
 	<sstream>
 	"tile.h"
 	"storable.h"
 
-1412638468 c:\users\alex jones\documents\github\catandmouse\tile.h
+1413818557 c:\users\alex jones\documents\github\catandmouse\tile.h
 	<SFML/System.hpp>
 	<SFML/Window.hpp>
 	<SFML/Graphics.hpp>
@@ -172,7 +171,7 @@
 	"track.h"
 	"configuration.h"
 
-1412806164 source:c:\users\alex jones\documents\github\catandmouse\race.cpp
+1413822865 source:c:\users\alex jones\documents\github\catandmouse\race.cpp
 	"race.h"
 
 1410724236 source:c:\users\alex jones\documents\github\catandmouse\menuitem.cpp
@@ -197,7 +196,7 @@
 	<string>
 	<iostream>
 
-1413641380 source:c:\users\alex jones\documents\github\catandmouse\renderfunctions.cpp
+1413835047 source:c:\users\alex jones\documents\github\catandmouse\renderfunctions.cpp
 	"renderfunctions.h"
 
 1413213090 source:c:\users\alex jones\documents\github\catandmouse\configuration.cpp
@@ -293,7 +292,7 @@
 1413150176 c:\users\alex jones\documents\github\catandmouse\storabletilemap.h
 	"tile.h"
 
-1413154829 source:c:\users\alex jones\documents\github\catandmouse\storabletilemap.cpp
+1413822837 source:c:\users\alex jones\documents\github\catandmouse\storabletilemap.cpp
 	"storable.h"
 
 1413210489 c:\users\alex jones\documents\github\catandmouse\storablecontroller.h
@@ -301,7 +300,7 @@
 1413212698 source:c:\users\alex jones\documents\github\catandmouse\storablecontroller.cpp
 	"storable.h"
 
-1413651381 c:\users\alex jones\documents\github\catandmouse\toolbaritem.h
+1413828002 c:\users\alex jones\documents\github\catandmouse\toolbaritem.h
 	<SFML/System.hpp>
 	<SFML/Window.hpp>
 	<SFML/Graphics.hpp>
@@ -322,13 +321,13 @@
 1413627716 source:c:\users\alex jones\documents\github\catandmouse\toolbaritem.cpp
 	"toolbaritem.h"
 
-1413650464 c:\users\alex jones\documents\github\catandmouse\toolbarnumber.h
+1413819216 c:\users\alex jones\documents\github\catandmouse\toolbarnumber.h
 
-1413651101 source:c:\users\alex jones\documents\github\catandmouse\toolbarnumber.cpp
+1413820742 source:c:\users\alex jones\documents\github\catandmouse\toolbarnumber.cpp
 	"toolbaritem.h"
 
-1413653685 c:\users\alex jones\documents\github\catandmouse\toolbarbuttonlist.h
+1413817044 c:\users\alex jones\documents\github\catandmouse\toolbarbuttonlist.h
 
-1413653956 source:c:\users\alex jones\documents\github\catandmouse\toolbarbuttonlist.cpp
+1413817387 source:c:\users\alex jones\documents\github\catandmouse\toolbarbuttonlist.cpp
 	"toolbaritem.h"
 

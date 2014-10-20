@@ -16,6 +16,7 @@ void Race::init(Configuration &NewConfig){
 
 
 void Race::Update(double DeltaTime){
+    track.RefreshDetection();
     for (unsigned i=0; i<Player.size() ; i++)
     {
         if (Player[i].DeathSwitch==0)
@@ -31,7 +32,6 @@ void Race::Update(double DeltaTime){
             ResetCar(i);
         }
     }
-    track.RefreshDetection();
     UpdateTraction();
     UpdateLaps();
     HandlePlayerOnPlayerCollisions();

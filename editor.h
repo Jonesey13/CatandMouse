@@ -30,9 +30,6 @@ private:
     sf::VertexArray OverLay;
 
     vector<shared_ptr<ToolbarItem>> ToolbarItems;
-//    vector<Clickable<bool>> ClickableBools;
-//    vector<Clickable<unsigned>> ClickableUnsigneds;
-//    Clickable<unsigned> ClickableSelection;
     unsigned RenderSize=32;
     bool OverLayON=1;
     double Scaling=0;
@@ -44,6 +41,7 @@ private:
     bool ExitFlag=0;
     bool StartFlag=0;
     bool SaveFlag=0;
+    bool HelpFlag=0;
     unsigned PaintSelection=0;
     unsigned PlayerSelection=0;
     void PrepareandScaleTriangle(sf::Vertex *tri, sf::Vertex *lines, Vector2u TextPos,
@@ -51,10 +49,12 @@ private:
     vector<sf::Text> StartingNumbers;
     vector<sf::CircleShape> StartingCircles;
     vector<sf::RectangleShape> ToolBoxes;
+    vector<string> HelpMessages;
 
     void OverLayAction(unsigned &RenderIndex);
     void FinishDirectionAction(unsigned &RenderIndex);
     void PaintSelectionAction(unsigned &RenderIndex);
+    void ReshapeTrack();
 
 public:
     Editor(){};
