@@ -30,9 +30,9 @@ void Game::init(Configuration &NewConfig, sf::RenderWindow &NewWindow,unsigned &
         Player[i]=&race.Player[i];
     }
 
-    PauseItem Option=PauseItem("Resume",ActionUnpause);
+    PauseItem Option=PauseItem("Resume",&Game::ActionUnpause);
     PauseOptions.push_back(Option);
-    Option=PauseItem("Exit",ActionExit);
+    Option=PauseItem("Exit",&Game::ActionExit);
     PauseOptions.push_back(Option);
 
     Vector2u Resolution=Window->getSize();

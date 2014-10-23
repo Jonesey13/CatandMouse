@@ -20,74 +20,74 @@ Menu::Menu(sf::RenderWindow &NewWindow)
     {
         Items.push_back(ItemVector);
     }
-    MenuItem Item=MenuItem("Start",ActionStartGame);
+    MenuItem Item=MenuItem("Start",&Menu::ActionStartGame);
     Items[0].push_back(Item);
 
 
-    Item=MenuItem("Track Number",Config.TrackNumber,1,100,NoAction);
+    Item=MenuItem("Track Number",Config.TrackNumber,1,100,&Menu::NoAction);
     Items[0].push_back(Item);
 
-    Item=MenuItem("Number Of Players",Config.NumberOfPlayers,1,8,NoAction);
+    Item=MenuItem("Number Of Players",Config.NumberOfPlayers,1,8,&Menu::NoAction);
     Items[0].push_back(Item);
 
-    Item=MenuItem("Options",ActionOptionsMenu);
+    Item=MenuItem("Options",&Menu::ActionOptionsMenu);
     Items[0].push_back(Item);
 
-    Item=MenuItem("Track Editor",ActionEditorMenu1);
+    Item=MenuItem("Track Editor",&Menu::ActionEditorMenu1);
     Items[0].push_back(Item);
 
-    Item=MenuItem("Track Number",Config.TrackNumber,NoAction);
+    Item=MenuItem("Track Number",Config.TrackNumber,&Menu::NoAction);
     Items[1].push_back(Item);
 
-    Item=MenuItem("Use Existing Track","No Track Recorded",ActionEditorRunCurrent);
+    Item=MenuItem("Use Existing Track","No Track Recorded",&Menu::ActionEditorRunCurrent);
     Items[1].push_back(Item);
 
-    Item=MenuItem("Start A New Track",ActionEditorMenu2);
+    Item=MenuItem("Start A New Track",&Menu::ActionEditorMenu2);
     Items[1].push_back(Item);
 
-    Item=MenuItem("Return",ActionReturn);
+    Item=MenuItem("Return",&Menu::ActionReturn);
     Items[1].push_back(Item);
 
-    Item=MenuItem("Set Track Width",EditOptions.NewTrackDim.x,1,100,NoAction);
+    Item=MenuItem("Set Track Width",EditOptions.NewTrackDim.x,1,100,&Menu::NoAction);
     Items[2].push_back(Item);
 
-    Item=MenuItem("Set Track Height",EditOptions.NewTrackDim.y,1,100,NoAction);
+    Item=MenuItem("Set Track Height",EditOptions.NewTrackDim.y,1,100,&Menu::NoAction);
     Items[2].push_back(Item);
 
-    Item=MenuItem("Begin",ActionEditorRunNew);
+    Item=MenuItem("Begin",&Menu::ActionEditorRunNew);
     Items[2].push_back(Item);
 
-    Item=MenuItem("Return",ActionReturn);
+    Item=MenuItem("Return",&Menu::ActionReturn);
     Items[2].push_back(Item);
 
-    Item=MenuItem("Number of Laps",Config.NumberOfLaps,NoAction);
+    Item=MenuItem("Number of Laps",Config.NumberOfLaps,&Menu::NoAction);
     Items[3].push_back(Item);
 
-    Item=MenuItem("Configure Controllers",ActionControllerMenu);
+    Item=MenuItem("Configure Controllers",&Menu::ActionControllerMenu);
     Items[3].push_back(Item);
 
-    Item=MenuItem("Save Settings","Done",ActionSaveOptions);
+    Item=MenuItem("Save Settings","Done",&Menu::ActionSaveOptions);
     Items[3].push_back(Item);
 
-    Item=MenuItem("Load Settings","Done",ActionLoadOptions);
+    Item=MenuItem("Load Settings","Done",&Menu::ActionLoadOptions);
     Items[3].push_back(Item);
 
-    Item=MenuItem("Return",ActionReturn);
+    Item=MenuItem("Return",&Menu::ActionReturn);
     Items[3].push_back(Item);
 
-    Item=MenuItem("Player Number",CurrentPlayer,1,8,NoAction);
+    Item=MenuItem("Player Number",CurrentPlayer,1,8,&Menu::NoAction);
     Items[4].push_back(Item);
 
-    Item=MenuItem("Choose Joystick For Player","Press Any Button For Player",CurrentPlayer,ActionJoyConfig);
+    Item=MenuItem("Choose Joystick For Player","Press Any Button For Player",CurrentPlayer,&Menu::ActionJoyConfig);
     Items[4].push_back(Item);
 
-    Item=MenuItem("Choose Accelerate Button","Press Button Now",ActionAccelerateSet);
+    Item=MenuItem("Choose Accelerate Button","Press Button Now",&Menu::ActionAccelerateSet);
     Items[4].push_back(Item);
 
-    Item=MenuItem("Choose Brake Button","Press Button Now",ActionBrakeSet);
+    Item=MenuItem("Choose Brake Button","Press Button Now",&Menu::ActionBrakeSet);
     Items[4].push_back(Item);
 
-    Item=MenuItem("Return to Options",ActionOptionsMenu);
+    Item=MenuItem("Return to Options",&Menu::ActionOptionsMenu);
     Items[4].push_back(Item);
 
 }

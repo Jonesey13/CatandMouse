@@ -1,18 +1,17 @@
 CXX=g++
-CPPFLAGS=-std=c++11 -IC:\SFML-2.1\include
+CPPFLAGS=-std=c++11 -IC:\SFML-2.1\include -O3 -std=c++11 -Wall -pedantic
 LDFLAGS=-LC:\SFML-2.1\lib
 LDLIBS=-lsfml-system-2 -lsfml-window-2 -lsfml-graphics-2 -lsfml-audio-2 
-STORABLESOURCES=storablecontroller.cpp storabletilemap.cpp
-TOOLBARSOURCES=toolbarbutton.cpp toolbarbuttonlist.cpp toolbaritem.cpp toolbarnumber.cpp
-SOURCES=car.cpp configuration.cpp editor.cpp functions.cpp game.cpp main.cpp menu.cpp race.cpp \
-				renderfunctions.cpp track.cpp $(TOOLBARSOURCES) $(STORABLESOURCES)
+SOURCES=$(wildcard *.cpp)
 OBJECTS=$(SOURCES:.cpp=.o)
 
-CatandMouse: $(OBJECTS)
-	$(CXX) -o CatandMouse.exe $(OBJECTS) $(LDFLAGS) $(LDLIBS)
+OUT=CatandMouse
+
+$(OUT): $(OBJECTS)
+	$(CXX) $(OBJECTS) $(LDFLAGS) $(LDLIBS) -o $@
 
 %.o: %.cpp
-	g++ --std=c++11 -IC:\SFML-2.1\include -c $< -o $@ 
+	$(CXX) $(CPPFLAGS) -c $< -o $@ 
 	
 
 

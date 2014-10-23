@@ -12,7 +12,7 @@ ToolbarItem::ToolbarItem( vector<string> NewTitle,Vector2d NewPosition , unsigne
     for(unsigned i=0; i< Title.size(); i++)
         TitleText[i]=CreateText(Title[i],Font,TextSize,sf::Color::Red,
                              Vector2d(Position.x,Position.y-(TitleText.size()-i)*TextSize));
-};
+}
 
 
 void ToolbarItem::Render(){

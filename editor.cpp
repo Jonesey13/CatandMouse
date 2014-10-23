@@ -39,11 +39,11 @@ void Editor::init(EditorOptions &NewEditOptions, sf::RenderWindow &NewWindow,uns
 
 
     ToolbarItems.push_back(make_shared<ToolbarButton>(vector<string>{"Overlay", "ON/OFF"},Vector2d(0.925*Resolution.x, 0.1*Resolution.y)
-                                ,0.05*Resolution.x, OverLayAction, ButtonTexture
+                                ,0.05*Resolution.x, &Editor::OverLayAction, ButtonTexture
                                 , vector<Vector2u>{Vector2u(0,0),Vector2u(0,1)}, 1));
 
     ToolbarItems.push_back(make_shared<ToolbarButton>(vector<string>{"Finishing", "Direction"},Vector2d(0.925*Resolution.x, 0.3*Resolution.y)
-                                ,0.05*Resolution.x, FinishDirectionAction, ButtonTexture
+                                ,0.05*Resolution.x, &Editor::FinishDirectionAction, ButtonTexture
                                 , vector<Vector2u>{Vector2u(1,0),Vector2u(1,1),Vector2u(1,2),Vector2u(1,3)}));
 
     vector<Vector2u> textpos;
@@ -53,17 +53,17 @@ void Editor::init(EditorOptions &NewEditOptions, sf::RenderWindow &NewWindow,uns
         textpos[i]=Vector2u(0,i);
     }
     ToolbarItems.push_back(make_shared<ToolbarButtonList>(vector<string>{"Paint", "Selection"},Vector2d(0.3*Resolution.x, 0.925*Resolution.y)
-                                ,0.05*Resolution.x, PaintSelectionAction, TrackTexture, textpos,0,&PaintSelection));
+                                ,0.05*Resolution.x, &Editor::PaintSelectionAction, TrackTexture, textpos,0,&PaintSelection));
 
 
     ToolbarItems.push_back(make_shared<ToolbarNumber>(vector<string>{"No. Starting", "Players"},Vector2d(0.925*Resolution.x, 0.5*Resolution.y)
                                                         ,0.05*Resolution.x, track.TotalStarting, 1,8));
 
     ToolbarItems.push_back(make_shared<ToolbarNumber>(vector<string>{"Width"},Vector2d(0.925*Resolution.x, 0.65*Resolution.y)
-                                                        ,0.05*Resolution.x, track.Dim.x, 1,50,ReshapeTrack));
+                                                        ,0.05*Resolution.x, track.Dim.x, 1,50,&Editor::ReshapeTrack));
 
     ToolbarItems.push_back(make_shared<ToolbarNumber>(vector<string>{"Height"},Vector2d(0.925*Resolution.x, 0.8*Resolution.y)
-                                                        ,0.05*Resolution.x, track.Dim.y, 1,50,ReshapeTrack));
+                                                        ,0.05*Resolution.x, track.Dim.y, 1,50,&Editor::ReshapeTrack));
 
     ToolbarItems.push_back(make_shared<ToolbarItem>(vector<string>{"H=Help"},Vector2d(0.925*Resolution.x, 0.95*Resolution.y)
                                                         ,0.05*Resolution.x));
