@@ -7,6 +7,7 @@ Track::Track(){
     {
         StartingPositions.push_back(Vector2u(i,0));
     }
+    Traps.resize(10);
 }
 
 void Track::init(unsigned TrackNumber)
@@ -237,5 +238,27 @@ bool Track::getFinishSquareHalf(Vector2d Position){
     else
     {
         return ((1-2*Negative)*(Position.y-TilePosition.y-0.5)>0);
+    }
+}
+
+
+void Track::FlipTrap(unsigned index, bool Mode){
+    Trap* trap=&Traps[index];
+
+    for (unsigned i=0; i< trap->TrapPositions.size(); i++)
+    {
+        Vector2u& Position=trap->TrapPositions[i];
+        Vector2u& Orientation=trap->TrapOrientations[i];
+        Vector2u* Types;
+        if (Mode==1)
+            Types=&trap->TrapTypesOn[i];
+        else
+            Types=&trap->TrapTypesOff[i];
+        if (Orientation.y==0)
+            Tiles[Position.x][Position.y].Types=*Types;
+        if (Orientation.y==1)
+            Tiles[Position.x][Position.y].Types.x=Types->x;
+        if (Orientation.y==1)
+            Tiles[Position.x][Position.y].Types.y=Types->y;
     }
 }

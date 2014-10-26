@@ -78,6 +78,8 @@
 		<Unit filename="toolbarnumber.h" />
 		<Unit filename="track.cpp" />
 		<Unit filename="track.h" />
+		<Unit filename="trap.cpp" />
+		<Unit filename="trap.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />

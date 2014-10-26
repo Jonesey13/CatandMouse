@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include "tile.h"
+#include "trap.h"
 #include "storable.h"
 
 
@@ -17,6 +18,7 @@ class Track
     friend class TrackTileMap;
     friend class Editor;
     vector<vector<Tile>> Tiles;
+    vector<Trap> Traps;
     Vector2u Dim;
     void Reshape();
 
@@ -37,6 +39,7 @@ public:
     void WriteTrack(unsigned TrackNumber);
     void FlushTrack(unsigned TrackNumber);
     void RefreshDetection();
+    void FlipTrap(unsigned index, bool Mode);
     bool getFinishSquareHalf(Vector2d Position);
 };
 

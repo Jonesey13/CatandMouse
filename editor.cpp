@@ -3,7 +3,7 @@
 
 void Editor::init(EditorOptions &NewEditOptions, sf::RenderWindow &NewWindow,unsigned &cycles, unsigned &frames){
     Window=&NewWindow;
-    Vector2u Resolution=Window->getSize();
+    Resolution=Window->getSize();
 
     ButtonTexture.loadFromFile("EditorSprites.png");
     TrackTexture.loadFromFile("TrackSprites.png");
@@ -13,6 +13,8 @@ void Editor::init(EditorOptions &NewEditOptions, sf::RenderWindow &NewWindow,uns
     ToolbarItem::TextSize=0.02*Resolution.x;
 
     EditorActive=1;
+
+    TotalTraps=track.Traps.size();
 
     frameptr=&frames;
     *frameptr=0;
@@ -29,72 +31,15 @@ void Editor::init(EditorOptions &NewEditOptions, sf::RenderWindow &NewWindow,uns
         track.ReadTrack(EditOptions.TrackNumber);
     }
 
-    sf::RectangleShape Rectangle=CreateRectangle(Vector2d(0.15*Resolution.x,Resolution.y),sf::Color(80,80,80)
-                                                , Vector2d (0.85*Resolution.x+0.5*0.15*Resolution.x,0.5*Resolution.y));
-    ToolBoxes.push_back(Rectangle);
-    Rectangle=CreateRectangle(Vector2d(Resolution.x,0.15*Resolution.y),sf::Color(80,80,80)
-                                                , Vector2d (0.5*Resolution.x,0.85*Resolution.y+0.5*0.15*Resolution.y));
-    ToolBoxes.push_back(Rectangle);
+    RefreshToolbarButtons();
 
-
-
-    ToolbarItems.push_back(make_shared<ToolbarButton>(vector<string>{"Overlay", "ON/OFF"},Vector2d(0.925*Resolution.x, 0.1*Resolution.y)
-                                ,0.05*Resolution.x, &Editor::OverLayAction, ButtonTexture
-                                , vector<Vector2u>{Vector2u(0,0),Vector2u(0,1)}, 1));
-
-    ToolbarItems.push_back(make_shared<ToolbarButton>(vector<string>{"Finishing", "Direction"},Vector2d(0.925*Resolution.x, 0.3*Resolution.y)
-                                ,0.05*Resolution.x, &Editor::FinishDirectionAction, ButtonTexture
-                                , vector<Vector2u>{Vector2u(1,0),Vector2u(1,1),Vector2u(1,2),Vector2u(1,3)}));
-
-    vector<Vector2u> textpos;
-    textpos.resize(5);
-    for (unsigned i=0; i<5; ++i)
-    {
-        textpos[i]=Vector2u(0,i);
-    }
-    ToolbarItems.push_back(make_shared<ToolbarButtonList>(vector<string>{"Paint", "Selection"},Vector2d(0.3*Resolution.x, 0.925*Resolution.y)
-                                ,0.05*Resolution.x, &Editor::PaintSelectionAction, TrackTexture, textpos,0,&PaintSelection));
-
-
-    ToolbarItems.push_back(make_shared<ToolbarNumber>(vector<string>{"No. Starting", "Players"},Vector2d(0.925*Resolution.x, 0.5*Resolution.y)
-                                                        ,0.05*Resolution.x, track.TotalStarting, 1,8));
-
-    ToolbarItems.push_back(make_shared<ToolbarNumber>(vector<string>{"Width"},Vector2d(0.925*Resolution.x, 0.65*Resolution.y)
-                                                        ,0.05*Resolution.x, track.Dim.x, 1,50,&Editor::ReshapeTrack));
-
-    ToolbarItems.push_back(make_shared<ToolbarNumber>(vector<string>{"Height"},Vector2d(0.925*Resolution.x, 0.8*Resolution.y)
-                                                        ,0.05*Resolution.x, track.Dim.y, 1,50,&Editor::ReshapeTrack));
-
-    ToolbarItems.push_back(make_shared<ToolbarItem>(vector<string>{"H=Help"},Vector2d(0.925*Resolution.x, 0.95*Resolution.y)
-                                                        ,0.05*Resolution.x));
-
-    HelpMessages={"Press Enter to Exit or Save",
-                    "Num1-Num5 sets the paint tile",
-                    "S sets the current player position",
-                    "D switches player",
-                    "H to close this message"};
 
 
     TrackTiles.setPrimitiveType(sf::Triangles);
     OverLay.setPrimitiveType(sf::Lines);
-    Vector2u TrackDim=track.getDim();
-    Vector2u TrackRes=Vector2u(TrackDim.x,TrackDim.y);
-    Scaling=min(Resolution.x/static_cast<double>(TrackRes.x), Resolution.y/static_cast<double>(TrackRes.y));
-    ScalingTrack=0.85*Scaling;
-    ScalingTools=0.15*Scaling;
-    for (unsigned i=0; i<8 ; ++i)
-    {
-        sf::CircleShape Circle=CreateCircle(0.3*Scaling,sf::Color::Green,Vector2d(0,0));
-        StartingCircles.push_back(Circle);
+    RefreshTrackRendering();
 
-        ostringstream convert;
-        convert<<i+1;
-        sf::Text text=CreateText(convert.str(),&font,0.5*Scaling,sf::Color::Red,Vector2d(0,0));
-        StartingNumbers.push_back(text);
-    }
     Clock.restart();
-
-
 
 }
 
@@ -199,55 +144,18 @@ void Editor::Update(double DeltaTime){
     Vector2i LocalMousePosition = sf::Mouse::getPosition(*Window);
     Vector2d MousePosition=Vector2d(LocalMousePosition.x,LocalMousePosition.y)/static_cast<double>(ScalingTrack);
     Vector2u CurrentSquare=Vector2u(MousePosition.x,MousePosition.y);
+    Tile* CurrentTile=&track.Tiles[CurrentSquare.x][CurrentSquare.y];
     if(ClickLeft==1 || ClickRight==1){
         Vector2u Dim=track.getDim();
         if (CurrentSquare.x<Dim.x && CurrentSquare.y<Dim.y)
         {
-            Tile *CurrentTile=track.getTile(CurrentSquare.x,CurrentSquare.y);
-            if(CurrentTile->isSquare==1)
-            {
-                if(ClickLeft==1)
-                {
-                    CurrentTile->Types=Vector2u(PaintSelection,PaintSelection);
-                }
-                if(ClickRight==1)
-                {
-                    CurrentTile->Types=Vector2u(CurrentTile->Types.x,CurrentTile->Types.x);
-                    CurrentTile->Orientation=0;
-                    CurrentTile->isSquare=0;
-                }
-            }
-            else{
-                bool half=getTriangleHalf(MousePosition,CurrentTile->Orientation);
-                if(half==0){
-                    if(ClickLeft==1)
-                    {
-                        CurrentTile->Types=Vector2u(PaintSelection,CurrentTile->Types.y);
-                    }
-                }
-                else{
-                    if(ClickLeft==1)
-                    {
-                        CurrentTile->Types=Vector2u(CurrentTile->Types.x,PaintSelection);
-                    }
-                }
-                if(ClickRight==1)
-                {
-                    if(CurrentTile->Orientation==0)
-                    {
-                        CurrentTile->Orientation=1;
-                        CurrentTile->isSquare=0;
-                    }
-                    else{
-                        CurrentTile->Types=Vector2u(CurrentTile->Types.x,CurrentTile->Types.x);
-                        CurrentTile->Orientation=0;
-                        CurrentTile->isSquare=1;
-                    }
-                }
-            }
-
+            bool Half=getTriangleHalf(MousePosition,CurrentTile->Orientation);
+            if (ToolbarMode==0)
+                UpdateClickTrackEdit(CurrentSquare,Half);
+            else
+                UpdateClickTrapEdit(CurrentSquare,Half);
         }
-        for (auto& index: ToolbarItems)
+        for (auto& index: ToolbarItems[ToolbarMode])
             index->Update(*this);
         ClickLeft=0;
         ClickRight=0;
@@ -273,7 +181,6 @@ void Editor::Update(double DeltaTime){
 
 void Editor::Render(){
     Vector2u TrackDim=track.getDim();
-    Vector2u Resolution=Window->getSize();
     TrackTiles.resize((TrackDim.x*TrackDim.y)*6);
     OverLay.resize((TrackDim.x*TrackDim.y)*12);
     unsigned current=0;
@@ -338,7 +245,7 @@ void Editor::Render(){
 
     for (unsigned i=0; i<8; i++)
     {
-        if (i<track.TotalStarting)
+        if (i<track.TotalStarting && ToolbarMode==0)
         {
             Window->draw(StartingCircles[i]);
             Window->draw(StartingNumbers[i]);
@@ -350,8 +257,17 @@ void Editor::Render(){
         Window->draw(index);
     }
 
-    for (auto &index : ToolbarItems)
+    for (auto &index : ToolbarItems[ToolbarMode])
         index->Render();
+
+    for (unsigned i=0; i<track.Traps.size();i++)
+    {
+        for (unsigned j=0; j<track.Traps[i].SwitchPositions.size();j++)
+        {
+            Window->draw(SwitchCircles[i][j]);
+            Window->draw(SwitchBoxes[i][j]);
+        }
+    }
 
     if(HelpFlag)
     {
@@ -424,6 +340,98 @@ void Editor::PrepareandScaleTriangle(sf::Vertex *tri, sf::Vertex *lines ,
 
 }
 
+
+void Editor::UpdateClickTrackEdit(Vector2u CurrentSquare, bool Half){
+    Tile *CurrentTile=track.getTile(CurrentSquare.x,CurrentSquare.y);
+    bool Available=1;
+    for( auto& trap : track.Traps)
+    {
+        vector<Vector2u> SwitchPos=trap.SwitchPositions;
+        if(find(SwitchPos.begin(),SwitchPos.end(),CurrentSquare)!=SwitchPos.end())
+           {
+               Available=0;
+           }
+    }
+    if (Available)
+    {
+        if(CurrentTile->isSquare==1)
+        {
+            if(ClickLeft==1)
+            {
+                CurrentTile->Types=Vector2u(PaintSelection,PaintSelection);
+            }
+            if(ClickRight==1)
+            {
+                CurrentTile->Types=Vector2u(CurrentTile->Types.x,CurrentTile->Types.x);
+                CurrentTile->Orientation=0;
+                CurrentTile->isSquare=0;
+            }
+        }
+        else{
+            if(Half==0){
+                if(ClickLeft==1)
+                {
+                    CurrentTile->Types=Vector2u(PaintSelection,CurrentTile->Types.y);
+                }
+            }
+            else{
+                if(ClickLeft==1)
+                {
+                    CurrentTile->Types=Vector2u(CurrentTile->Types.x,PaintSelection);
+                }
+            }
+            if(ClickRight==1)
+            {
+                if(CurrentTile->Orientation==0)
+                {
+                    CurrentTile->Orientation=1;
+                    CurrentTile->isSquare=0;
+                }
+                else{
+                    CurrentTile->Types=Vector2u(CurrentTile->Types.x,CurrentTile->Types.x);
+                    CurrentTile->Orientation=0;
+                    CurrentTile->isSquare=1;
+                }
+            }
+        }
+    }
+}
+
+void Editor::UpdateClickTrapEdit(Vector2u CurrentSquare, bool Half){
+    if(ClickLeft && SwitchMode)
+    {
+        bool Available=1;
+        for( auto& trap : track.Traps)
+        {
+            vector<Vector2u> SwitchPos=trap.SwitchPositions;
+            if(find(SwitchPos.begin(),SwitchPos.end(),CurrentSquare)!=SwitchPos.end())
+               {
+                   Available=0;
+               }
+        }
+        if (Available==1)
+        {
+            Tile* tile=track.getTile(CurrentSquare.x,CurrentSquare.y);
+            tile->isSquare=1;
+            tile->Types=Vector2u(1,1);
+            track.Traps[CurrentTrap].SwitchPositions.push_back(CurrentSquare);
+        }
+    }
+    if(ClickRight && SwitchMode)
+    {
+        Trap& trap=track.Traps[CurrentTrap];
+        vector<Vector2u> &SwitchPos=trap.SwitchPositions;
+
+        auto it=find(SwitchPos.begin(),SwitchPos.end(),CurrentSquare);
+        if (it!=SwitchPos.end())
+        {
+            SwitchPos.erase(it);
+        }
+    }
+    RefreshTrackRendering();
+
+}
+
 void Editor::OverLayAction(unsigned& RenderIndex){
     OverLayON=!OverLayON;
     RenderIndex=OverLayON;
@@ -442,9 +450,8 @@ void Editor::PaintSelectionAction(unsigned &RenderIndex){
     PaintSelection=RenderIndex;
 }
 
-void Editor::ReshapeTrack(){
+void Editor::RefreshTrackRendering(){
     track.Reshape();
-    Vector2u Resolution=Window->getSize();
     Vector2u TrackDim=track.getDim();
     Vector2u TrackRes=Vector2u(TrackDim.x,TrackDim.y);
     Scaling=min(Resolution.x/static_cast<double>(TrackRes.x), Resolution.y/static_cast<double>(TrackRes.y));
@@ -471,5 +478,118 @@ void Editor::ReshapeTrack(){
         sf::Text text=CreateText(convert.str(),&font,0.5*Scaling,sf::Color::Red,Vector2d(0,0));
         StartingNumbers.push_back(text);
     }
+
+    SwitchCircles.clear();
+    SwitchBoxes.clear();
+    SwitchCircles.resize(track.Traps.size());
+    SwitchBoxes.resize(track.Traps.size());
+    for (unsigned i=0; i<track.Traps.size(); i++)
+    {
+        Trap& trap=track.Traps[i];
+        SwitchCircles[i].resize(trap.SwitchPositions.size());
+        SwitchBoxes[i].resize(trap.SwitchPositions.size());
+        bool MainSwitch=trap.MainSwitch;
+        for (unsigned j=0; j<trap.SwitchPositions.size(); j++)
+        {
+            Vector2d SwitchPosition=ScalingTrack*Vector2d(trap.SwitchPositions[j].x+0.5, trap.SwitchPositions[j].y+0.5);
+            if (MainSwitch==0)
+                SwitchCircles[i][j]=CreateCircle(0.3*Scaling,sf::Color::Yellow,SwitchPosition);
+            else
+                SwitchCircles[i][j]=CreateCircle(0.3*Scaling,sf::Color::Green,SwitchPosition);
+            if (CurrentTrap==i)
+                SwitchBoxes[i][j]=CreateLineBox(SwitchPosition, ScalingTrack, sf::Color::Yellow);
+            else
+                SwitchBoxes[i][j]=CreateLineBox(SwitchPosition, ScalingTrack, sf::Color::Red);
+        }
+    }
+
+}
+
+void Editor::TrapModeOnOff(unsigned &RenderIndex){
+    if(ToolbarMode==0)
+        ToolbarMode=1;
+    else
+        ToolbarMode=0;
+};
+
+void Editor::RefreshToolbarButtons(){
+    ToolBoxes.clear();
+    sf::RectangleShape Rectangle=CreateRectangle(Vector2d(0.15*Resolution.x,Resolution.y),sf::Color(80,80,80)
+                                                , Vector2d (0.85*Resolution.x+0.5*0.15*Resolution.x,0.5*Resolution.y));
+    ToolBoxes.push_back(Rectangle);
+    Rectangle=CreateRectangle(Vector2d(Resolution.x,0.15*Resolution.y),sf::Color(80,80,80)
+                                                , Vector2d (0.5*Resolution.x,0.85*Resolution.y+0.5*0.15*Resolution.y));
+    ToolBoxes.push_back(Rectangle);
+
+
+    ToolbarItems.clear();
+    ToolbarItems.resize(2);
+
+    ToolbarItems[0].push_back(make_shared<ToolbarButton>(vector<string>{"Overlay", "ON/OFF"},Vector2d(0.925*Resolution.x, 0.1*Resolution.y)
+                                ,0.05*Resolution.x, &Editor::OverLayAction, ButtonTexture
+                                , vector<Vector2u>{Vector2u(0,0),Vector2u(0,1)}, 1));
+    ToolbarItems[1].push_back(make_shared<ToolbarButton>(vector<string>{"Overlay", "ON/OFF"},Vector2d(0.925*Resolution.x, 0.1*Resolution.y)
+                                ,0.05*Resolution.x, &Editor::OverLayAction, ButtonTexture
+                                , vector<Vector2u>{Vector2u(0,0),Vector2u(0,1)}, 1));
+
+    ToolbarItems[0].push_back(make_shared<ToolbarButton>(vector<string>{"Finishing", "Direction"},Vector2d(0.925*Resolution.x, 0.3*Resolution.y)
+                                ,0.05*Resolution.x, &Editor::FinishDirectionAction, ButtonTexture
+                                , vector<Vector2u>{Vector2u(1,0),Vector2u(1,1),Vector2u(1,2),Vector2u(1,3)}));
+
+    vector<Vector2u> textpos;
+    textpos.resize(5);
+    for (unsigned i=0; i<5; ++i)
+    {
+        textpos[i]=Vector2u(0,i);
+    }
+    ToolbarItems[0].push_back(make_shared<ToolbarButtonList>(vector<string>{"Paint", "Selection"},Vector2d(0.3*Resolution.x, 0.925*Resolution.y)
+                                ,0.05*Resolution.x, &Editor::PaintSelectionAction, TrackTexture, textpos,0,&PaintSelection));
+
+
+    ToolbarItems[0].push_back(make_shared<ToolbarNumber>(vector<string>{"No. Starting", "Players"},Vector2d(0.925*Resolution.x, 0.5*Resolution.y)
+                                                        ,0.05*Resolution.x, track.TotalStarting, 1,8));
+
+    ToolbarItems[0].push_back(make_shared<ToolbarNumber>(vector<string>{"Width"},Vector2d(0.925*Resolution.x, 0.65*Resolution.y)
+                                                        ,0.05*Resolution.x, track.Dim.x, 1,50,&Editor::RefreshTrackRendering));
+
+    ToolbarItems[0].push_back(make_shared<ToolbarNumber>(vector<string>{"Height"},Vector2d(0.925*Resolution.x, 0.8*Resolution.y)
+                                                        ,0.05*Resolution.x, track.Dim.y, 1,50,&Editor::RefreshTrackRendering));
+
+    ToolbarItems[0].push_back(make_shared<ToolbarItem>(vector<string>{"H=Help"},Vector2d(0.925*Resolution.x, 0.95*Resolution.y)
+                                                        ,0.05*Resolution.x));
+    ToolbarItems[0].push_back(make_shared<ToolbarButton>(vector<string>{"Trap Edit Mode"},Vector2d(0.8*Resolution.x, 0.925*Resolution.y)
+                                ,0.05*Resolution.x, &Editor::TrapModeOnOff, ButtonTexture
+                                , vector<Vector2u>{Vector2u(0,0)}, 0));
+    ToolbarItems[1].push_back(make_shared<ToolbarButton>(vector<string>{"Trap Edit Mode"},Vector2d(0.8*Resolution.x, 0.925*Resolution.y)
+                                ,0.05*Resolution.x, &Editor::TrapModeOnOff, ButtonTexture
+                                , vector<Vector2u>{Vector2u(0,1)}, 0));
+    ToolbarItems[1].push_back(make_shared<ToolbarNumber>(vector<string>{"Current Trap"},Vector2d(0.925*Resolution.x, 0.65*Resolution.y)
+                                                        ,0.05*Resolution.x, CurrentTrap, 0,TotalTraps-1,&Editor::RefreshTrackRendering));
+    ToolbarItems[1].push_back(make_shared<ToolbarNumber>(vector<string>{"Total Traps"},Vector2d(0.925*Resolution.x, 0.5*Resolution.y)
+                                                        ,0.05*Resolution.x, TotalTraps, 1,50,&Editor::ChangeTotalTraps));
+    ToolbarItems[1].push_back(make_shared<ToolbarButton>(vector<string>{"Switch Mode", "ON/OFF"},Vector2d(0.925*Resolution.x, 0.25*Resolution.y)
+                                ,0.05*Resolution.x, &Editor::SwitchModeAction, ButtonTexture
+                                , vector<Vector2u>{Vector2u(0,0),Vector2u(0,1)}, 0));
+
+    HelpMessages={"Press Enter to Exit or Save",
+                    "Num1-Num5 sets the paint tile",
+                    "S sets the current player position",
+                    "D switches player",
+                    "H to close this message"};
+}
+
+void Editor::ChangeTotalTraps(){
+    track.Traps.resize(TotalTraps);
+    if (CurrentTrap>=TotalTraps)
+    {
+        CurrentTrap=TotalTraps-1;
+    }
+    RefreshToolbarButtons();
+}
+
+void Editor::SwitchModeAction(unsigned &RenderIndex){
+    SwitchMode=!SwitchMode;
+    RenderIndex=SwitchMode;
+
 }
 

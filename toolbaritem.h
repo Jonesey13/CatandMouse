@@ -31,7 +31,7 @@ public:
     static sf::Font *Font;
     static unsigned TextSize;
 
-    ToolbarItem( vector<string> NewTitle,Vector2d NewPosition, unsigned NewWidth  );
+    ToolbarItem( vector<string> NewTitle,Vector2d NewPosition, unsigned NewWidth);
     virtual void Update(Editor &editor){};
     virtual void Render();
     vector<string> Title;

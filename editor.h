@@ -3,7 +3,6 @@
 
 #include "editoroptions.h"
 #include "track.h"
-//#include "clickable.h"
 #include "toolbaritem.h"
 #include "functions.h"
 #include "renderfunctions.h"
@@ -22,6 +21,7 @@ private:
     sf::Texture TrackTexture;
     EditorOptions EditOptions;
     Track track;
+    Vector2u Resolution;
     sf::RenderWindow *Window;
     unsigned *frameptr=nullptr;
     unsigned *cycleptr=nullptr;
@@ -29,8 +29,14 @@ private:
     sf::VertexArray TrackTiles;
     sf::VertexArray OverLay;
 
-    vector<shared_ptr<ToolbarItem>> ToolbarItems;
+    vector<vector<shared_ptr<ToolbarItem>>> ToolbarItems;
+    unsigned ToolbarMode=0;
+    unsigned CurrentTrap=0;
+    unsigned TotalTraps;
+
     unsigned RenderSize=32;
+
+    bool SwitchMode=0;;
     bool OverLayON=1;
     double Scaling=0;
     double ScalingTrack=0;
@@ -50,21 +56,30 @@ private:
     vector<sf::CircleShape> StartingCircles;
     vector<sf::RectangleShape> ToolBoxes;
     vector<string> HelpMessages;
+    vector<vector<sf::CircleShape>> SwitchCircles;
+    vector<vector<sf::VertexArray>> SwitchBoxes;
 
+    void TrapModeOnOff(unsigned &RenderIndex);
     void OverLayAction(unsigned &RenderIndex);
+    void SwitchModeAction(unsigned &RenderIndex);
     void FinishDirectionAction(unsigned &RenderIndex);
     void PaintSelectionAction(unsigned &RenderIndex);
-    void ReshapeTrack();
+    void RefreshTrackRendering();
+    void RefreshToolbarButtons();
+    void ChangeTotalTraps();
+
 
 public:
     Editor(){};
-    //Editor(EditorOptions &NewEditOptions, sf::RenderWindow &NewWindow,unsigned &cycles, unsigned &frames);
     bool EditorActive=0;
     double getTime(){return Clock.getElapsedTime().asSeconds();};
     void init(EditorOptions &NewEditOptions, sf::RenderWindow &NewWindow,unsigned &cycles, unsigned &frames);
     void ProcessEvents(sf::Event &Event);
     void Update(double DeltaTime);
+    void UpdateClickTrackEdit(Vector2u CurrentSquare, bool Half);
+    void UpdateClickTrapEdit(Vector2u CurrentSquare, bool Half);
     void Render();
+
 };
 
 

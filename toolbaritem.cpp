@@ -5,7 +5,7 @@ sf::Font* ToolbarItem::Font=nullptr;
 unsigned ToolbarItem::TextSize=0;
 
 
-ToolbarItem::ToolbarItem( vector<string> NewTitle,Vector2d NewPosition , unsigned NewWidth ):
+ToolbarItem::ToolbarItem( vector<string> NewTitle,Vector2d NewPosition , unsigned NewWidth):
     Title(NewTitle),Position(NewPosition), Width(NewWidth)
 {
     TitleText.resize(Title.size());

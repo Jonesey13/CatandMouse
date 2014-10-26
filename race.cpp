@@ -238,7 +238,7 @@ void Race::HandleWallCollisions(){
                         Attempts++;
                     }
                 }
-                if(Attempts>=5)
+                if(Attempts>=20)
                 {
                     Player[i].DeathSwitch=1;
                     StillCorrecting=0;
@@ -301,6 +301,11 @@ void Race::HandlePlayerOnPlayerCollisions(){
                                                 CornerPoly,CollisionPos,Direction,Overlap,DoubleFlag,Attempts);
                     Attempts++;
                     StillCorrecting=1;
+                }
+                if(Attempts>=5)
+                {
+                    //Player[i].DeathSwitch=1;
+                    StillCorrecting=0;
                 }
             }
         }

@@ -21,7 +21,7 @@ void Car::Update(double DeltaTime){
     double Rolling=DotProduct(Velocity,RollingDirection);
     double Sliding=DotProduct(Velocity,SlidingDirection);
     Rolling=Rolling-RollingFriction*Rolling*DeltaTime;
-    if (abs(Sliding)>abs(SlidingFriction*DeltaTime))
+    if (fabs(Sliding)>fabs(SlidingFriction*DeltaTime))
     {
     Sliding=Sliding-SlidingFriction*copysign(1,Sliding)*DeltaTime;
     }
@@ -30,7 +30,7 @@ void Car::Update(double DeltaTime){
     }
     Velocity=Rolling*RollingDirection+Sliding*SlidingDirection;
 
-    if (abs(Angular)>abs(AngularFriction*DeltaTime))
+    if (fabs(Angular)>fabs(AngularFriction*DeltaTime))
     {
         Angular=Angular-AngularFriction*Angular*DeltaTime;
     }
@@ -89,7 +89,7 @@ void Car::Update(double DeltaTime){
 
 void Car::DeathUpdate(double DeltaTime){
     Position+=DeltaTime*Velocity;
-    if (abs(Angular)>abs(AngularFriction*DeltaTime))
+    if (fabs(Angular)>fabs(AngularFriction*DeltaTime))
     {
         Angular=Angular-AngularFriction*Angular*DeltaTime;
     }
