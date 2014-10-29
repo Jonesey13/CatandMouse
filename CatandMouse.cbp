@@ -43,6 +43,7 @@
 		<Unit filename="configuration.h" />
 		<Unit filename="editor.cpp" />
 		<Unit filename="editor.h" />
+		<Unit filename="editoractions.cpp" />
 		<Unit filename="editorclickable.h" />
 		<Unit filename="editoroptions.h" />
 		<Unit filename="functions.cpp" />
@@ -64,6 +65,8 @@
 		<Unit filename="storablesingle.h" />
 		<Unit filename="storabletilemap.cpp" />
 		<Unit filename="storabletilemap.h" />
+		<Unit filename="storabletraplist.cpp" />
+		<Unit filename="storabletraplist.h" />
 		<Unit filename="storablevector.h" />
 		<Unit filename="storablevector2.h" />
 		<Unit filename="storablevectorvector2.h" />

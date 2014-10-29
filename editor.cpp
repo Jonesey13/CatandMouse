@@ -151,12 +151,28 @@ void Editor::Update(double DeltaTime){
         {
             bool Half=getTriangleHalf(MousePosition,CurrentTile->Orientation);
             if (ToolbarMode==0)
-                UpdateClickTrackEdit(CurrentSquare,Half);
+                UpdateClickTrackEdit(CurrentSquare,CurrentTile->Orientation,Half);
             else
-                UpdateClickTrapEdit(CurrentSquare,Half);
+                {
+                    if (WiringMode==0)
+                        UpdateClickTrapEdit(CurrentSquare,CurrentTile->Orientation,Half);
+                    else
+                    {
+                        Vector2u CurrentDouble=Vector2u(2*(MousePosition.x+0.25),2*(MousePosition.y+0.25));
+                        Vector2d CurrentPrecise=Vector2d(CurrentDouble.x/2.0,CurrentDouble.y/2.0);
+                        UpdateClickWiringEdit(CurrentPrecise);
+                    }
+                }
         }
         for (auto& index: ToolbarItems[ToolbarMode])
-            index->Update(*this);
+            {
+                index->Update(*this);
+                if (ToolboxesAltered)
+                    {
+                        ToolboxesAltered=0;
+                        break;
+                    }
+            }
         ClickLeft=0;
         ClickRight=0;
     }
@@ -176,6 +192,7 @@ void Editor::Update(double DeltaTime){
         }
         EditorActive=0;
     }
+
 
 }
 
@@ -267,6 +284,23 @@ void Editor::Render(){
             Window->draw(SwitchCircles[i][j]);
             Window->draw(SwitchBoxes[i][j]);
         }
+        for (unsigned j=0; j<track.Traps[i].trapData.size();j++)
+        {
+            Window->draw(TrapBoxes[i][j]);
+        }
+
+        for (unsigned j=0; j<track.Traps[i].Wiring.size();j++)
+        {
+            Window->draw(WiringLines[i][j]);
+        }
+    }
+    if(InitialStored)
+    {
+        Vector2i MousePosOrig=sf::Mouse::getPosition(*Window);
+        Vector2d MousePos=Vector2d(MousePosOrig.x,MousePosOrig.y);
+        sf::VertexArray Line=CreateLine(ScalingTrack*InitialWiringPos, MousePos
+                                        ,sf::Color::Red);
+        Window->draw(Line);
     }
 
     if(HelpFlag)
@@ -323,7 +357,6 @@ void Editor::PrepareandScaleTriangle(sf::Vertex *tri, sf::Vertex *lines ,
     {
         tri[i]=quad[(i+Orientation)%4];
     }
-
     lines[0]=quad[Orientation%4];
     lines[1]=quad[(Orientation+1)%4];
     lines[2]=quad[(Orientation+1)%4];
@@ -336,14 +369,14 @@ void Editor::PrepareandScaleTriangle(sf::Vertex *tri, sf::Vertex *lines ,
         lines[4]=quad[(Orientation)%4];
         lines[5]=quad[(Orientation+2)%4];
     }
-
-
 }
 
 
-void Editor::UpdateClickTrackEdit(Vector2u CurrentSquare, bool Half){
+void Editor::UpdateClickTrackEdit(Vector2u CurrentSquare, bool Orientation, bool Half){
     Tile *CurrentTile=track.getTile(CurrentSquare.x,CurrentSquare.y);
     bool Available=1;
+    TrapData *SelectedTrapPos=nullptr;
+    Trap* SelectedTrap;
     for( auto& trap : track.Traps)
     {
         vector<Vector2u> SwitchPos=trap.SwitchPositions;
@@ -351,6 +384,43 @@ void Editor::UpdateClickTrackEdit(Vector2u CurrentSquare, bool Half){
            {
                Available=0;
            }
+        if(ClickRight)
+            {
+            vector<Vector2u> TrapPos;
+            for (unsigned i=0; i<trap.trapData.size(); i++)
+            {
+                if(CurrentTile->isSquare || trap.trapData[i].Half==Half || ClickRight)
+                    TrapPos.push_back(trap.trapData[i].Square);
+            }
+            if(find(TrapPos.begin(),TrapPos.end(),CurrentSquare)!=TrapPos.end())
+               {
+                   Available=0;
+               }
+           }
+        if(ClickLeft)
+        {
+            vector<TrapData> &AllTrapData=trap.trapData;
+            TrapData CurrentTriangle;
+            CurrentTriangle.Square=CurrentSquare;
+            CurrentTriangle.Half=Half;
+            auto it=find_if(AllTrapData.begin(),AllTrapData.end(),[&](const TrapData &First)
+                        {return (First.Square==CurrentTriangle.Square) && (First.Half==CurrentTriangle.Half);});
+            if(it!=AllTrapData.end())
+            {
+                SelectedTrapPos=&(*it);
+                SelectedTrap=&trap;
+            }
+            if (CurrentTile->isSquare)
+            {
+                it=find_if(AllTrapData.begin(),AllTrapData.end(),[&](const TrapData &First)
+                            {return (First.Square==CurrentTriangle.Square) && (First.Half!=CurrentTriangle.Half);});
+                if(it!=AllTrapData.end())
+                {
+                    SelectedTrapPos=&(*it);
+                    SelectedTrap=&trap;
+                }
+            }
+        }
     }
     if (Available)
     {
@@ -394,11 +464,46 @@ void Editor::UpdateClickTrackEdit(Vector2u CurrentSquare, bool Half){
                 }
             }
         }
+        if(SelectedTrapPos)
+        {
+            if (SelectedTrap->MainSwitch==0)
+                SelectedTrapPos->Types.x=PaintSelection;
+            else
+                SelectedTrapPos->Types.y=PaintSelection;
+        }
     }
 }
 
-void Editor::UpdateClickTrapEdit(Vector2u CurrentSquare, bool Half){
+void Editor::UpdateClickTrapEdit(Vector2u CurrentSquare,bool Orientation, bool Half){
+    Tile* CurrentTile=track.getTile(CurrentSquare.x,CurrentSquare.y);
     if(ClickLeft && SwitchMode)
+    {
+        bool Available=1;
+        for( auto& trap : track.Traps)
+        {
+            vector<Vector2u> SwitchPos=trap.SwitchPositions;
+            if(find(SwitchPos.begin(),SwitchPos.end(),CurrentSquare)!=SwitchPos.end())
+            {
+               Available=0;
+            }
+            vector<Vector2u> TrapPos;
+            for (unsigned i=0; i<trap.trapData.size(); i++)
+            {
+                TrapPos.push_back(trap.trapData[i].Square);
+            }
+            if(find(TrapPos.begin(),TrapPos.end(),CurrentSquare)!=TrapPos.end())
+            {
+               Available=0;
+            }
+        }
+        if (Available==1)
+        {
+            CurrentTile->isSquare=1;
+            CurrentTile->Types=Vector2u(1,1);
+            track.Traps[CurrentTrap].SwitchPositions.push_back(CurrentSquare);
+        }
+    }
+    if(ClickLeft && !SwitchMode)
     {
         bool Available=1;
         for( auto& trap : track.Traps)
@@ -408,13 +513,34 @@ void Editor::UpdateClickTrapEdit(Vector2u CurrentSquare, bool Half){
                {
                    Available=0;
                }
+            vector<Vector2u> TrapPos;
+            for (unsigned i=0; i<trap.trapData.size(); i++)
+            {
+                if(trap.trapData[i].Half==Half)
+                    TrapPos.push_back(trap.trapData[i].Square);
+            }
+            if(find(TrapPos.begin(),TrapPos.end(),CurrentSquare)!=TrapPos.end())
+               {
+                   Available=0;
+               }
         }
         if (Available==1)
         {
-            Tile* tile=track.getTile(CurrentSquare.x,CurrentSquare.y);
-            tile->isSquare=1;
-            tile->Types=Vector2u(1,1);
-            track.Traps[CurrentTrap].SwitchPositions.push_back(CurrentSquare);
+            bool MainSwitch=track.Traps[CurrentTrap].MainSwitch;
+            if(CurrentTile->isSquare)
+                CurrentTile->Types=Vector2u(MainSwitch,MainSwitch);
+            else
+            {
+                if (Half==1)
+                    CurrentTile->Types.y=MainSwitch;
+                else
+                    CurrentTile->Types.x=MainSwitch;
+            }
+            TrapData NewData;
+            NewData.Square=CurrentSquare;
+            NewData.Half=Half;
+            NewData.Types=Vector2u(0,1);
+            track.Traps[CurrentTrap].trapData.push_back(NewData);
         }
     }
     if(ClickRight && SwitchMode)
@@ -428,27 +554,77 @@ void Editor::UpdateClickTrapEdit(Vector2u CurrentSquare, bool Half){
             SwitchPos.erase(it);
         }
     }
+    if(ClickRight && !SwitchMode)
+    {
+        Trap& trap=track.Traps[CurrentTrap];
+        vector<TrapData> &AllTrapData=trap.trapData;
+        TrapData CurrentTriangle;
+        CurrentTriangle.Square=CurrentSquare;
+        CurrentTriangle.Half=Half;
+
+
+        auto it=find_if(AllTrapData.begin(),AllTrapData.end(),[&](const TrapData &First)
+                        {return (First.Square==CurrentTriangle.Square) && (First.Half==CurrentTriangle.Half);});
+        if (it!=AllTrapData.end())
+        {
+            AllTrapData.erase(it);
+        }
+        if (CurrentTile->isSquare)
+        {
+            CurrentTriangle.Half=!Half;
+            it=find_if(AllTrapData.begin(),AllTrapData.end(),[&](const TrapData &First)
+                        {return (First.Square==CurrentTriangle.Square) && (First.Half==CurrentTriangle.Half);});
+            if (it!=AllTrapData.end())
+            {
+                AllTrapData.erase(it);
+            }
+        }
+    }
+
     RefreshTrackRendering();
 
 }
 
-void Editor::OverLayAction(unsigned& RenderIndex){
-    OverLayON=!OverLayON;
-    RenderIndex=OverLayON;
+void Editor::UpdateClickWiringEdit(Vector2d Position){
+    if (ClickLeft)
+        {
+        if (InitialStored==0)
+        {
+            InitialWiringPos=Position;
+            InitialStored=1;
+        }
+        else
+        {
+            Vector2d FinalWiringPos=Position;
+            Trap& trap=track.Traps[CurrentTrap];
+            trap.Wiring.push_back(pair<Vector2d,Vector2d>(InitialWiringPos,FinalWiringPos));
+            InitialStored=0;
+        }
+
+        }
+    if (ClickRight)
+    {
+        if (InitialStored==1)
+        {
+            InitialStored=0;
+        }
+        if (InitialStored==0)
+        {
+            Trap& trap=track.Traps[CurrentTrap];
+            auto it=find_if(trap.Wiring.begin(),trap.Wiring.end(),
+                            [&](pair<Vector2d,Vector2d> Wire)
+                            {return (DotProduct(Position-Wire.first,Position-Wire.first)<0.0001) ||
+                                    (DotProduct(Position-Wire.second,Position-Wire.second)<0.0001);});
+            if (it!=trap.Wiring.end())
+            {
+                trap.Wiring.erase(it);
+            }
+        }
+
+    }
+    RefreshTrackRendering();
 }
 
-void Editor::FinishDirectionAction(unsigned& RenderIndex){
-    unsigned &Direction=track.FinishDirection;
-    if (Direction!=3)
-        Direction++;
-    else
-        Direction=0;
-    RenderIndex=Direction;
-}
-
-void Editor::PaintSelectionAction(unsigned &RenderIndex){
-    PaintSelection=RenderIndex;
-}
 
 void Editor::RefreshTrackRendering(){
     track.Reshape();
@@ -481,13 +657,19 @@ void Editor::RefreshTrackRendering(){
 
     SwitchCircles.clear();
     SwitchBoxes.clear();
+    TrapBoxes.clear();
+    WiringLines.clear();
     SwitchCircles.resize(track.Traps.size());
     SwitchBoxes.resize(track.Traps.size());
+    TrapBoxes.resize(track.Traps.size());
+    WiringLines.resize(track.Traps.size());
     for (unsigned i=0; i<track.Traps.size(); i++)
     {
         Trap& trap=track.Traps[i];
         SwitchCircles[i].resize(trap.SwitchPositions.size());
         SwitchBoxes[i].resize(trap.SwitchPositions.size());
+        TrapBoxes[i].resize(trap.trapData.size());
+        WiringLines[i].resize(trap.Wiring.size());
         bool MainSwitch=trap.MainSwitch;
         for (unsigned j=0; j<trap.SwitchPositions.size(); j++)
         {
@@ -501,95 +683,34 @@ void Editor::RefreshTrackRendering(){
             else
                 SwitchBoxes[i][j]=CreateLineBox(SwitchPosition, ScalingTrack, sf::Color::Red);
         }
+        for (unsigned j=0; j<trap.trapData.size(); j++)
+        {
+            Vector2u TrapPosUnsigned=trap.trapData[j].Square;
+            Tile* CurrentTile=track.getTile(TrapPosUnsigned.x,TrapPosUnsigned.y);
+            bool isSquare=CurrentTile->isSquare;
+            unsigned Orientation=CurrentTile->Orientation;
+            bool Half=trap.trapData[j].Half;
+            Vector2d TrapPosition=ScalingTrack*Vector2d(TrapPosUnsigned.x+0.5, TrapPosUnsigned.y+0.5);
+            if (CurrentTrap==i && isSquare)
+                TrapBoxes[i][j]=CreateLineBox(TrapPosition, ScalingTrack, sf::Color::Yellow);
+            if (CurrentTrap!=i && isSquare)
+                TrapBoxes[i][j]=CreateLineBox(TrapPosition, ScalingTrack, sf::Color::Red);
+            if (CurrentTrap==i && !isSquare)
+                TrapBoxes[i][j]=CreateLineTriangle(TrapPosition,Orientation,Half, ScalingTrack, sf::Color::Yellow);
+            if (CurrentTrap!=i && !isSquare)
+                TrapBoxes[i][j]=CreateLineTriangle(TrapPosition,Orientation,Half, ScalingTrack, sf::Color::Red);
+        }
+        for (unsigned j=0; j<trap.Wiring.size(); j++)
+        {
+            Vector2d StartPos=trap.Wiring[j].first;
+            Vector2d EndPos=trap.Wiring[j].second;
+            StartPos=ScalingTrack*StartPos;
+            EndPos=ScalingTrack*EndPos;
+            if(CurrentTrap!=i)
+                WiringLines[i][j]=CreateLine(StartPos,EndPos,sf::Color::Red);
+            else
+                WiringLines[i][j]=CreateLine(StartPos,EndPos,sf::Color::Yellow);
+        }
     }
 
 }
-
-void Editor::TrapModeOnOff(unsigned &RenderIndex){
-    if(ToolbarMode==0)
-        ToolbarMode=1;
-    else
-        ToolbarMode=0;
-};
-
-void Editor::RefreshToolbarButtons(){
-    ToolBoxes.clear();
-    sf::RectangleShape Rectangle=CreateRectangle(Vector2d(0.15*Resolution.x,Resolution.y),sf::Color(80,80,80)
-                                                , Vector2d (0.85*Resolution.x+0.5*0.15*Resolution.x,0.5*Resolution.y));
-    ToolBoxes.push_back(Rectangle);
-    Rectangle=CreateRectangle(Vector2d(Resolution.x,0.15*Resolution.y),sf::Color(80,80,80)
-                                                , Vector2d (0.5*Resolution.x,0.85*Resolution.y+0.5*0.15*Resolution.y));
-    ToolBoxes.push_back(Rectangle);
-
-
-    ToolbarItems.clear();
-    ToolbarItems.resize(2);
-
-    ToolbarItems[0].push_back(make_shared<ToolbarButton>(vector<string>{"Overlay", "ON/OFF"},Vector2d(0.925*Resolution.x, 0.1*Resolution.y)
-                                ,0.05*Resolution.x, &Editor::OverLayAction, ButtonTexture
-                                , vector<Vector2u>{Vector2u(0,0),Vector2u(0,1)}, 1));
-    ToolbarItems[1].push_back(make_shared<ToolbarButton>(vector<string>{"Overlay", "ON/OFF"},Vector2d(0.925*Resolution.x, 0.1*Resolution.y)
-                                ,0.05*Resolution.x, &Editor::OverLayAction, ButtonTexture
-                                , vector<Vector2u>{Vector2u(0,0),Vector2u(0,1)}, 1));
-
-    ToolbarItems[0].push_back(make_shared<ToolbarButton>(vector<string>{"Finishing", "Direction"},Vector2d(0.925*Resolution.x, 0.3*Resolution.y)
-                                ,0.05*Resolution.x, &Editor::FinishDirectionAction, ButtonTexture
-                                , vector<Vector2u>{Vector2u(1,0),Vector2u(1,1),Vector2u(1,2),Vector2u(1,3)}));
-
-    vector<Vector2u> textpos;
-    textpos.resize(5);
-    for (unsigned i=0; i<5; ++i)
-    {
-        textpos[i]=Vector2u(0,i);
-    }
-    ToolbarItems[0].push_back(make_shared<ToolbarButtonList>(vector<string>{"Paint", "Selection"},Vector2d(0.3*Resolution.x, 0.925*Resolution.y)
-                                ,0.05*Resolution.x, &Editor::PaintSelectionAction, TrackTexture, textpos,0,&PaintSelection));
-
-
-    ToolbarItems[0].push_back(make_shared<ToolbarNumber>(vector<string>{"No. Starting", "Players"},Vector2d(0.925*Resolution.x, 0.5*Resolution.y)
-                                                        ,0.05*Resolution.x, track.TotalStarting, 1,8));
-
-    ToolbarItems[0].push_back(make_shared<ToolbarNumber>(vector<string>{"Width"},Vector2d(0.925*Resolution.x, 0.65*Resolution.y)
-                                                        ,0.05*Resolution.x, track.Dim.x, 1,50,&Editor::RefreshTrackRendering));
-
-    ToolbarItems[0].push_back(make_shared<ToolbarNumber>(vector<string>{"Height"},Vector2d(0.925*Resolution.x, 0.8*Resolution.y)
-                                                        ,0.05*Resolution.x, track.Dim.y, 1,50,&Editor::RefreshTrackRendering));
-
-    ToolbarItems[0].push_back(make_shared<ToolbarItem>(vector<string>{"H=Help"},Vector2d(0.925*Resolution.x, 0.95*Resolution.y)
-                                                        ,0.05*Resolution.x));
-    ToolbarItems[0].push_back(make_shared<ToolbarButton>(vector<string>{"Trap Edit Mode"},Vector2d(0.8*Resolution.x, 0.925*Resolution.y)
-                                ,0.05*Resolution.x, &Editor::TrapModeOnOff, ButtonTexture
-                                , vector<Vector2u>{Vector2u(0,0)}, 0));
-    ToolbarItems[1].push_back(make_shared<ToolbarButton>(vector<string>{"Trap Edit Mode"},Vector2d(0.8*Resolution.x, 0.925*Resolution.y)
-                                ,0.05*Resolution.x, &Editor::TrapModeOnOff, ButtonTexture
-                                , vector<Vector2u>{Vector2u(0,1)}, 0));
-    ToolbarItems[1].push_back(make_shared<ToolbarNumber>(vector<string>{"Current Trap"},Vector2d(0.925*Resolution.x, 0.65*Resolution.y)
-                                                        ,0.05*Resolution.x, CurrentTrap, 0,TotalTraps-1,&Editor::RefreshTrackRendering));
-    ToolbarItems[1].push_back(make_shared<ToolbarNumber>(vector<string>{"Total Traps"},Vector2d(0.925*Resolution.x, 0.5*Resolution.y)
-                                                        ,0.05*Resolution.x, TotalTraps, 1,50,&Editor::ChangeTotalTraps));
-    ToolbarItems[1].push_back(make_shared<ToolbarButton>(vector<string>{"Switch Mode", "ON/OFF"},Vector2d(0.925*Resolution.x, 0.25*Resolution.y)
-                                ,0.05*Resolution.x, &Editor::SwitchModeAction, ButtonTexture
-                                , vector<Vector2u>{Vector2u(0,0),Vector2u(0,1)}, 0));
-
-    HelpMessages={"Press Enter to Exit or Save",
-                    "Num1-Num5 sets the paint tile",
-                    "S sets the current player position",
-                    "D switches player",
-                    "H to close this message"};
-}
-
-void Editor::ChangeTotalTraps(){
-    track.Traps.resize(TotalTraps);
-    if (CurrentTrap>=TotalTraps)
-    {
-        CurrentTrap=TotalTraps-1;
-    }
-    RefreshToolbarButtons();
-}
-
-void Editor::SwitchModeAction(unsigned &RenderIndex){
-    SwitchMode=!SwitchMode;
-    RenderIndex=SwitchMode;
-
-}
-

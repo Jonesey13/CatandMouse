@@ -16,6 +16,7 @@ void Game::init(Configuration &NewConfig, sf::RenderWindow &NewWindow,unsigned &
     font.loadFromFile("Aller.ttf");
     Config=NewConfig;
     Window=&NewWindow;
+    Resolution=Window->getSize();
     race.init(Config);
 
     track=&race.track;
@@ -35,7 +36,7 @@ void Game::init(Configuration &NewConfig, sf::RenderWindow &NewWindow,unsigned &
     Option=PauseItem("Exit",&Game::ActionExit);
     PauseOptions.push_back(Option);
 
-    Vector2u Resolution=Window->getSize();
+
     TrackTiles.setPrimitiveType(sf::Triangles);
     Vector2u TrackDim=track->getDim();
     Vector2d TrackRes=Vector2d(TrackDim.x,TrackDim.y);
@@ -50,6 +51,8 @@ void Game::init(Configuration &NewConfig, sf::RenderWindow &NewWindow,unsigned &
         paddingdim=1;
         padding=(Resolution.y-Scaling*TrackRes.y)*0.5;
     }
+
+    RefreshRendering();
 
     Clock.restart();
 }
@@ -244,6 +247,23 @@ void Game::Render(){
     }
     Window->draw(TrackTiles,&TrackTexture);
 
+
+    for (unsigned i=0; i<track->Traps.size();i++)
+    {
+        for (unsigned j=0; j<track->Traps[i].SwitchPositions.size();j++)
+        {
+            Window->draw(SwitchCircles[i][j]);
+        }
+        for (unsigned j=0; j<track->Traps[i].trapData.size();j++)
+        {
+            Window->draw(TrapBoxes[i][j]);
+        }
+        for (unsigned j=0; j<track->Traps[i].Wiring.size();j++)
+        {
+            Window->draw(WiringLines[i][j]);
+        }
+    }
+
     sf::Sprite PlayerSprite;
     PlayerSprite.setTexture(CarTexture);
     PlayerSprite.setOrigin(RenderSize/2,RenderSize/2);
@@ -269,7 +289,6 @@ void Game::Render(){
     {
         ostringstream convert;
         convert<<"Player "<<race.VictorNumber<<" Has Won!";
-        Vector2u Resolution=Window->getSize();
         unsigned VictoryTextSize=Resolution.y/(12.f);
         sf::RectangleShape VictoryRectangle=CreateRectangle(Vector2d(Resolution.x/1.5, VictoryTextSize*1.2),
                                                             sf::Color::Blue,Vector2d(Resolution.x/2,Resolution.y/4));
@@ -279,9 +298,9 @@ void Game::Render(){
         Window->draw(text);
     }
 
+
     if (Pause==1)
     {
-        Vector2u Resolution=Window->getSize();
         PauseTextSize=Resolution.y/(12.f);
         sf::RectangleShape PauseRectangle=CreateRectangle(Vector2d(Resolution.x/2, PauseTextSize*3),
                                                     sf::Color::Blue,Vector2d(Resolution.x/2,Resolution.y/2));
@@ -337,4 +356,60 @@ void Game::ActionUnpause(){
 
 void Game::ActionExit(){
     GameActive=0;
+}
+
+void Game::RefreshRendering(){
+
+    SwitchCircles.clear();
+    TrapBoxes.clear();
+    WiringLines.clear();
+    SwitchCircles.resize(track->Traps.size());
+    TrapBoxes.resize(track->Traps.size());
+    WiringLines.resize(track->Traps.size());
+    for (unsigned i=0; i<track->Traps.size(); i++)
+    {
+        Trap& trap=track->Traps[i];
+        SwitchCircles[i].resize(trap.SwitchPositions.size());
+        TrapBoxes[i].resize(trap.trapData.size());
+        WiringLines[i].resize(trap.Wiring.size());
+        bool MainSwitch=trap.MainSwitch;
+        for (unsigned j=0; j<trap.SwitchPositions.size(); j++)
+        {
+            Vector2d SwitchPosition=ScalePosition(Vector2d(trap.SwitchPositions[j].x+0.5, trap.SwitchPositions[j].y+0.5)
+                                                  , Scaling, paddingdim, padding);
+            if (MainSwitch==0)
+                SwitchCircles[i][j]=CreateCircle(0.3*Scaling,sf::Color::Yellow,SwitchPosition);
+            else
+                SwitchCircles[i][j]=CreateCircle(0.3*Scaling,sf::Color::Green,SwitchPosition);
+        }
+        for (unsigned j=0; j<trap.trapData.size(); j++)
+        {
+            Vector2u TrapPosUnsigned=trap.trapData[j].Square;
+            Tile* CurrentTile=track->getTile(TrapPosUnsigned.x,TrapPosUnsigned.y);
+            bool isSquare=CurrentTile->isSquare;
+            unsigned Orientation=CurrentTile->Orientation;
+            bool Half=trap.trapData[j].Half;
+            Vector2d TrapPosition=ScalePosition(Vector2d(TrapPosUnsigned.x+0.5, TrapPosUnsigned.y+0.5)
+                                                  , Scaling, paddingdim, padding);
+            if (trap.MainSwitch==1 && isSquare)
+                TrapBoxes[i][j]=CreateLineBox(TrapPosition, Scaling, sf::Color::Yellow);
+            if (trap.MainSwitch==0 && isSquare)
+                TrapBoxes[i][j]=CreateLineBox(TrapPosition, Scaling, sf::Color::Red);
+            if (trap.MainSwitch==1 && !isSquare)
+                TrapBoxes[i][j]=CreateLineTriangle(TrapPosition,Orientation,Half, Scaling, sf::Color::Yellow);
+            if (trap.MainSwitch==0 && !isSquare)
+                TrapBoxes[i][j]=CreateLineTriangle(TrapPosition,Orientation,Half, Scaling, sf::Color::Red);
+        }
+        for (unsigned j=0; j<trap.Wiring.size(); j++)
+        {
+            Vector2d StartPos=trap.Wiring[j].first;
+            Vector2d EndPos=trap.Wiring[j].second;
+            StartPos=ScalePosition(StartPos, Scaling, paddingdim, padding);
+            EndPos=ScalePosition(EndPos, Scaling, paddingdim, padding);
+            if(trap.MainSwitch==0)
+                WiringLines[i][j]=CreateLine(StartPos,EndPos,sf::Color::Red);
+            else
+                WiringLines[i][j]=CreateLine(StartPos,EndPos,sf::Color::Yellow);
+        }
+    }
 }

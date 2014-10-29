@@ -9,7 +9,6 @@ ToolbarButton::ToolbarButton(vector<string> NewTitle,Vector2d NewPosition,unsign
     Background=CreateRectangle(Vector2d(Width,Width),sf::Color::Black,Position+Vector2d(0,TextSize));
 
     BorderLines=CreateLineBox(Vector2d(Position.x,Position.y+TextSize),Width,sf::Color::Red);
-
     Graphics.resize(TexturePositions.size());
     for (unsigned i=0; i<Graphics.size(); i++)
     {

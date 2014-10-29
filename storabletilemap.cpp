@@ -24,10 +24,17 @@ void StorableTileMap::ReadFromStream(ifstream &inputstream){
         istringstream (InputString) >> InputInt.x;
 
         inputstream>>InputString;
+        if(InputString.substr(1,1)=="]")
+            {
+                tile.isSquare=1;
+            }
+        else
+            {
+                tile.isSquare=0;
+            }
+
         InputString.erase(1,1);
         istringstream (InputString) >> InputInt.y;
-
-        tile.isSquare= InputInt.x==InputInt.y;
         tile.Types=InputInt;
         SwappedTiles[i].push_back(tile);
 
@@ -80,7 +87,12 @@ void StorableTileMap::WriteToStream(ofstream &outputstream){
         {
             outputstream<<"(";
         }
-        outputstream<<Tiles[i][j].Types.x<<" "<<Tiles[i][j].Types.y<<") ";
+        outputstream<<Tiles[i][j].Types.x<<" "<<Tiles[i][j].Types.y;
+        if(Tiles[i][j].isSquare)
+            outputstream<<"] ";
+        else
+            outputstream<<") ";
+
         if (i==Dim.x-1)
         {
             outputstream<<"- "<<"\n";

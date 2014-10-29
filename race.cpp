@@ -34,6 +34,7 @@ void Race::Update(double DeltaTime){
     }
     UpdateTraction();
     UpdateLaps();
+    HandleTraps();
     HandlePlayerOnPlayerCollisions();
     HandleWallCollisions();
     HandleDeaths();
@@ -340,6 +341,25 @@ void Race::HandleSinglePlayerCollision(vector<Car*> Cars, vector<vector<Vector2d
         Cars[0]->Velocity-=VelocityChange;
         Cars[1]->Velocity+=VelocityChange;
     }
+}
+
+void Race::HandleTraps(){
+    for (unsigned i=0;i<Player.size();i++)
+    {
+        for (unsigned j=0; j<track.Traps.size();j++)
+        {
+            bool before=track.Traps[j].MainSwitch;
+            track.Traps[j].PlayerInteract(Player[i],i);
+            if (before!=track.Traps[j].MainSwitch)
+            {
+                track.FlipTrap(j,track.Traps[j].MainSwitch);
+            }
+
+        }
+    }
+
+
+
 }
 
 

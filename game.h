@@ -16,10 +16,14 @@ class Game
     unsigned *cycleptr=nullptr;
     vector<Car*> Player;
     vector<PauseItem> PauseOptions;
+    vector<vector<sf::CircleShape>> SwitchCircles;
+    vector<vector<sf::VertexArray>> TrapBoxes;
+    vector<vector<sf::VertexArray>> WiringLines;
     bool Pause=0;
     unsigned Selection=0;
     unsigned Selected=0;
 
+    Vector2u Resolution;
     unsigned PauseTextSize=0;
     sf::Texture CarTexture;
     sf::Texture TrackTexture;
@@ -33,6 +37,7 @@ class Game
     void PrepareandScaleTriangle(sf::Vertex *quad, Vector2i TextPos, Vector2i Pos, unsigned Orientation);
     void ActionUnpause();
     void ActionExit();
+    void RefreshRendering();
 
 
 public:

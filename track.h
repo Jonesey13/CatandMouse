@@ -18,12 +18,12 @@ class Track
     friend class TrackTileMap;
     friend class Editor;
     vector<vector<Tile>> Tiles;
-    vector<Trap> Traps;
     Vector2u Dim;
     void Reshape();
 
 public:
     Track();
+    vector<Trap> Traps;
     void init(unsigned TrackNumber);
     vector<Vector2u> StartingPositions;
     Vector2u getDim();

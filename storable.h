@@ -40,6 +40,7 @@ public:
 #include "storablevectorvector2.h"
 #include "storabletilemap.h"
 #include "storablecontroller.h"
+#include "storabletraplist.h"
 
 
 #endif // STORABLE_H

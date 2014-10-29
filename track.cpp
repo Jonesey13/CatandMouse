@@ -106,6 +106,7 @@ vector<Vector2d> Track::getTileBounding(unsigned i, unsigned j, bool TriangleHal
         StorableSingle<unsigned> TotalStartingPlayers("TotalStartingPlayers:",TotalStarting);
         StorableVectorVector2<unsigned> TrackStartingPositions("StartingPositions:",StartingPositions);
         StorableTileMap TileMap("Tiles:",Tiles);
+        StorableTrapList TrapList("Traps:",Traps);
         while (InputString!="--EndTrack--"){
             Storable* storable=nullptr;
             InputStream>>InputString;
@@ -120,6 +121,8 @@ vector<Vector2d> Track::getTileBounding(unsigned i, unsigned j, bool TriangleHal
                 storable=&TrackStartingPositions;
             if (InputString=="Tiles:")
                 storable=&TileMap;
+            if (InputString=="Traps:")
+                storable=&TrapList;
 
 
             if (storable)
@@ -145,7 +148,8 @@ void Track::WriteTrack(unsigned TrackNumber){
     storables.push_back(&TrackStartingPositions);
     StorableTileMap TileMap("Tiles:",Tiles);
     storables.push_back(&TileMap);
-
+    StorableTrapList TrapList("Traps:",Traps);
+    storables.push_back(&TrapList);
 
     for(auto index : storables)
     {
@@ -162,10 +166,9 @@ void Track::FlushTrack(unsigned TrackNumber){
     unsigned InputInt;
     vector<unsigned> TrackNumberList;
     bool TrackFound=0;
-    while(!Input.eof())
+    while(Input>>InputString)
     {
-        Input>>InputString;
-        if (InputString.compare("--StartTrack--")==0)
+        if (InputString=="--StartTrack--")
         {
             Input>>InputString;
             Input>>InputInt;
@@ -245,20 +248,22 @@ bool Track::getFinishSquareHalf(Vector2d Position){
 void Track::FlipTrap(unsigned index, bool Mode){
     Trap* trap=&Traps[index];
 
-    for (unsigned i=0; i< trap->TrapPositions.size(); i++)
+    for (unsigned i=0; i< trap->trapData.size(); i++)
     {
-        Vector2u& Position=trap->TrapPositions[i];
-        Vector2u& Orientation=trap->TrapOrientations[i];
-        Vector2u* Types;
+        Vector2u Position=trap->trapData[i].Square;
+        bool Half=trap->trapData[i].Half;
+        Tile* CurrentTile=getTile(Position.x,Position.y);
+        bool isSquare=CurrentTile->isSquare;
+        unsigned NewType;
         if (Mode==1)
-            Types=&trap->TrapTypesOn[i];
+            NewType=trap->trapData[i].Types.y;
         else
-            Types=&trap->TrapTypesOff[i];
-        if (Orientation.y==0)
-            Tiles[Position.x][Position.y].Types=*Types;
-        if (Orientation.y==1)
-            Tiles[Position.x][Position.y].Types.x=Types->x;
-        if (Orientation.y==1)
-            Tiles[Position.x][Position.y].Types.y=Types->y;
+            NewType=trap->trapData[i].Types.x;
+        if (isSquare)
+            Tiles[Position.x][Position.y].Types=Vector2u(NewType,NewType);
+        if (!isSquare && Half==0)
+            Tiles[Position.x][Position.y].Types.x=NewType;
+        if (!isSquare && Half==1)
+            Tiles[Position.x][Position.y].Types.y=NewType;
     }
 }

@@ -14,6 +14,21 @@ sf::Text CreateText(string Message, sf::Font *Font ,double CharacterSize, sf::Co
 }
 
 
+sf::VertexArray CreateLine(Vector2d StartPosition, Vector2d FinishPosition,sf::Color Color){
+    sf::VertexArray Line;
+    Line.setPrimitiveType(sf::Lines);
+    Line.resize(2);
+    sf::Vertex LineBegin;
+    sf::Vertex LineEnd;
+    LineBegin.color=Color;
+    LineBegin.position=Vector2f(StartPosition.x,StartPosition.y);
+    LineEnd.color=Color;
+    LineEnd.position=Vector2f(FinishPosition.x,FinishPosition.y);
+    Line[0]=LineBegin;
+    Line[1]=LineEnd;
+    return Line;
+}
+
 sf::RectangleShape CreateRectangle(Vector2d RectangleSize,sf::Color Color, Vector2d Position){
     sf::RectangleShape Rectangle(Vector2f(RectangleSize.x,RectangleSize.y));
     Rectangle.setFillColor(Color);
@@ -55,6 +70,32 @@ sf::VertexArray CreateLineBox(Vector2d Position, double Width, sf::Color Color)
     Lines[7].position=Positionf+Vector2f(-Half,-Half);
 
     return Lines;
+}
+
+sf::VertexArray CreateLineTriangle(Vector2d Pos, bool Orientation, bool TriHalf, double Width, sf::Color Color){
+    sf::VertexArray lines;
+    lines.setPrimitiveType(sf::Lines);
+    lines.resize(6);
+    vector<sf::Vertex> quad(4);
+    float Half=Width/2.0;
+    quad[0].position=Vector2f(Pos.x-Half, Pos.y-Half);
+    quad[1].position=Vector2f(Pos.x-Half, Pos.y+Half);
+    quad[2].position=Vector2f(Pos.x+Half, Pos.y+Half);
+    quad[3].position=Vector2f(Pos.x+Half, Pos.y-Half);
+
+    unsigned Shift=Orientation+2*TriHalf;
+    lines[0]=quad[(Shift)%4];
+    lines[1]=quad[(Shift+1)%4];
+    lines[2]=quad[(Shift+1)%4];
+    lines[3]=quad[(Shift+2)%4];
+    lines[4]=quad[(Shift)%4];
+    lines[5]=quad[(Shift+2)%4];
+    for (unsigned i=0; i<6; i++)
+    {
+        lines[i].color=Color;
+    }
+
+    return lines;
 }
 
 sf::VertexArray CreateTexturedBox(Vector2d Position,double Width, Vector2u TexturePosition, float RenderSize)
@@ -125,5 +166,6 @@ Vector2f ScalePosition(Vector2f position, double Scaling, bool paddingdim, unsig
     }
     return position;
 }
+
 
 

@@ -26,6 +26,7 @@ public:
     void HandlePlayerOnPlayerCollisions();
     void HandleSinglePlayerCollision(vector<Car*> Cars, vector<vector<Vector2d>> Bounding, bool CornerCar, Vector2d CollisionPos,
                                      Vector2d Direction, double Overlap, bool DoubleFlag, unsigned Attempts);
+    void HandleTraps();
     void UpdateTraction();
     void UpdateLaps();
 };

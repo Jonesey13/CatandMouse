@@ -36,7 +36,12 @@ private:
 
     unsigned RenderSize=32;
 
-    bool SwitchMode=0;;
+    bool SwitchMode=0;
+    bool WiringMode=0;
+    Vector2d InitialWiringPos=Vector2d(0,0);
+    bool InitialStored=0;
+
+    bool TrapPaint=0;
     bool OverLayON=1;
     double Scaling=0;
     double ScalingTrack=0;
@@ -58,15 +63,23 @@ private:
     vector<string> HelpMessages;
     vector<vector<sf::CircleShape>> SwitchCircles;
     vector<vector<sf::VertexArray>> SwitchBoxes;
+    vector<vector<sf::VertexArray>> TrapBoxes;
+    vector<vector<sf::VertexArray>> WiringLines;
 
     void TrapModeOnOff(unsigned &RenderIndex);
     void OverLayAction(unsigned &RenderIndex);
     void SwitchModeAction(unsigned &RenderIndex);
     void FinishDirectionAction(unsigned &RenderIndex);
     void PaintSelectionAction(unsigned &RenderIndex);
+    void TrapONOFFAction(unsigned &RenderIndex);
+    void WiringModeAction(unsigned &RenderIndex);
+    void ChangeCurrentTrap();
     void RefreshTrackRendering();
     void RefreshToolbarButtons();
     void ChangeTotalTraps();
+
+    bool ToolboxesAltered=0;
+
 
 
 public:
@@ -76,8 +89,9 @@ public:
     void init(EditorOptions &NewEditOptions, sf::RenderWindow &NewWindow,unsigned &cycles, unsigned &frames);
     void ProcessEvents(sf::Event &Event);
     void Update(double DeltaTime);
-    void UpdateClickTrackEdit(Vector2u CurrentSquare, bool Half);
-    void UpdateClickTrapEdit(Vector2u CurrentSquare, bool Half);
+    void UpdateClickTrackEdit(Vector2u CurrentSquare, bool Orientation,bool Half);
+    void UpdateClickTrapEdit(Vector2u CurrentSquare, bool Orientation, bool Half);
+    void UpdateClickWiringEdit(Vector2d CurrentPrecise);
     void Render();
 
 };

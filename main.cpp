@@ -6,13 +6,14 @@
 int main()
 {
     Vector2i Resolution=Vector2i(800,600);
-    double CyclesPerSecond=100;
+    double CyclesPerSecond=60;
     double CycleTime=1/CyclesPerSecond;
     double FramesPerSecond=60;
     double FrameTime=1/FramesPerSecond;
     sf::Clock GameClock;
     unsigned cycles=0;
     unsigned frames=0;
+//    unsigned fails=0;
 
     sf::RenderWindow Window(sf::VideoMode(Resolution.x, Resolution.y), "Cat & Mouse");
     sf::Event Event;
@@ -23,10 +24,15 @@ int main()
     {
         if (game.GameActive==1)
         {
-            game.ProcessEvents(Event);
             if (game.getTime()-cycles*CycleTime>CycleTime)
             {
                 game.Update(CycleTime);
+//                if (game.getTime()-cycles*CycleTime>2*CycleTime)
+//                    {
+//                        fails++;
+//                        cerr<<fails<<endl;
+//                    }
+                game.ProcessEvents(Event);
                 cycles++;
             }
             if (game.getTime()-frames*FrameTime>FrameTime)
@@ -39,9 +45,9 @@ int main()
         if (editor.EditorActive==1)
         {
             sf::sleep(sf::milliseconds(1));
-            editor.ProcessEvents(Event);
             if (editor.getTime()-cycles*CycleTime>CycleTime)
             {
+                editor.ProcessEvents(Event);
                 editor.Update(CycleTime);
                 cycles++;
             }

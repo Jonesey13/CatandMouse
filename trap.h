@@ -5,16 +5,20 @@
 
 #include "car.h"
 
+class TrapData{
+public:
+    Vector2u Square;
+    bool Half;
+    Vector2u Types;
+};
+
 class Trap{
 public:
     vector<Vector2u> SwitchPositions;
-    vector<Vector2u> TrapPositions;
-    vector<Vector2u> TrapOrientations;
-    vector<Vector2u> TrapTypesOn;
-    vector<Vector2u> TrapTypesOff;
+    vector<TrapData> trapData;
     set<unsigned> SwitchPlayers;
     bool MainSwitch=0;
-
+    vector<pair<Vector2d,Vector2d>> Wiring;
     void PlayerInteract(Car& Player, unsigned PlayerNumber);
 };
 
