@@ -1,0 +1,34 @@
+NumberOfLaps: 3
+ControllerSettings: Player1: Joystick: 2
+0   0
+2   1
+----
+Player2: Joystick: 1
+0   0
+2   1
+----
+Player3: NoJoystick: 
+0   0
+1   1
+----
+Player4: NoJoystick: 
+0   0
+1   1
+----
+Player5: NoJoystick: 
+0   0
+1   1
+----
+Player6: NoJoystick: 
+0   0
+1   1
+----
+Player7: NoJoystick: 
+0   0
+1   1
+----
+Player8: NoJoystick: 
+0   0
+1   1
+----
+
