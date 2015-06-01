@@ -28,7 +28,7 @@ add_executable(Main ${ALL_SOURCES} ${ALL_HEADERS})
 
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
-    target_link_libraries (Main libSDL2)
+    target_link_libraries (Main lsfml-system lsfml-window lsfml-graphics lsfml-audio)
 endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 
 if(WIN32)
